@@ -40,7 +40,8 @@ function App() {
   const [isExtracting, setIsExtracting] = useState(false);
 
   // Table extraction states
-  const [statisticsCategory, setStatisticsCategory] = useState("GoalScoringLeaders");
+  const [statisticsCategory, setStatisticsCategory] =
+    useState("GoalScoringLeaders");
   const [leagueId, setLeagueId] = useState("18510");
   const [tableResult, setTableResult] = useState<TableExtractionResult | null>(
     null
@@ -192,27 +193,33 @@ function App() {
 
       // Try multiple approaches to extract the table
       let tableHtml = "";
-      
+
       // Method 1: Try to find table with class="tblContent" using a more robust pattern
-      const tableMatch1 = html.match(/<table[^>]*class[^>]*=["'][^"']*tblContent[^"']*["'][^>]*>[\s\S]*?<\/table>/i);
-      
+      const tableMatch1 = html.match(
+        /<table[^>]*class[^>]*=["'][^"']*tblContent[^"']*["'][^>]*>[\s\S]*?<\/table>/i
+      );
+
       if (tableMatch1) {
         tableHtml = tableMatch1[0];
       } else {
         // Method 2: Try alternative class attribute patterns
-        const tableMatch2 = html.match(/<table[^>]*class=['"]tblContent['"][^>]*>[\s\S]*?<\/table>/i);
-        
+        const tableMatch2 = html.match(
+          /<table[^>]*class=['"]tblContent['"][^>]*>[\s\S]*?<\/table>/i
+        );
+
         if (tableMatch2) {
           tableHtml = tableMatch2[0];
         } else {
           // Method 3: Search for any table containing "tblContent" in class
           const allTableMatches = html.match(/<table[\s\S]*?<\/table>/gi);
-          
+
           if (allTableMatches) {
-            const tblContentTable = allTableMatches.find(table => 
-              table.includes('tblContent') || table.includes('class="tblContent"')
+            const tblContentTable = allTableMatches.find(
+              (table) =>
+                table.includes("tblContent") ||
+                table.includes('class="tblContent"')
             );
-            
+
             if (tblContentTable) {
               tableHtml = tblContentTable;
             }
@@ -223,11 +230,11 @@ function App() {
       if (tableHtml) {
         // Clean up the table HTML and ensure it's properly formatted
         tableHtml = tableHtml.trim();
-        
+
         // Debug info
         const rowCount = (tableHtml.match(/<tr[\s\S]*?<\/tr>/gi) || []).length;
         const cellCount = (tableHtml.match(/<td[\s\S]*?<\/td>/gi) || []).length;
-        
+
         setTableResult({
           url: tableUrl,
           tableHtml: tableHtml,
@@ -237,9 +244,9 @@ function App() {
       } else {
         // Debug: Show what tables were found
         const allTables = html.match(/<table[\s\S]*?<\/table>/gi);
-        const tableInfo = allTables ? 
-          `Found ${allTables.length} table(s) on the page, but none with class 'tblContent'` :
-          "No tables found on the page";
+        const tableInfo = allTables
+          ? `Found ${allTables.length} table(s) on the page, but none with class 'tblContent'`
+          : "No tables found on the page";
 
         setTableResult({
           url: tableUrl,
@@ -321,9 +328,7 @@ function App() {
       {/* Table Content Extraction Section */}
       <div className="controls">
         <h2>Extract Table Content</h2>
-        <p>
-          Extract player statistics tables from Swedish Hockey Stats
-        </p>
+        <p>Extract player statistics tables from Swedish Hockey Stats</p>
 
         <div className="input-group">
           <label>
@@ -353,9 +358,12 @@ function App() {
             </select>
           </label>
         </div>
-        
+
         <div className="url-preview">
-          <p>URL: https://stats.swehockey.se/Players/Statistics/{statisticsCategory}/{leagueId}</p>
+          <p>
+            URL: https://stats.swehockey.se/Players/Statistics/
+            {statisticsCategory}/{leagueId}
+          </p>
         </div>
 
         <div className="button-group">
@@ -383,9 +391,7 @@ function App() {
               </a>
             </p>
             <p>Status: {tableResult.success ? "✅ Success" : "❌ Failed"}</p>
-            {tableResult.debugInfo && (
-              <p>Debug: {tableResult.debugInfo}</p>
-            )}
+            {tableResult.debugInfo && <p>Debug: {tableResult.debugInfo}</p>}
             {!tableResult.success && tableResult.error && (
               <p>Error: {tableResult.error}</p>
             )}
