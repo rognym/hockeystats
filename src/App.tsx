@@ -33,9 +33,7 @@ function App() {
   const [filterMIF, setFilterMIF] = useState(false);
 
   // Schedule URL extraction states
-  const [scheduleUrl, setScheduleUrl] = useState(
-    "https://stats.swehockey.se/ScheduleAndResults/Schedule/18986"
-  );
+  const [scheduleLeagueId, setScheduleLeagueId] = useState("18986");
   const [extractedUrls, setExtractedUrls] = useState<ExtractedUrl[]>([]);
   const [isExtracting, setIsExtracting] = useState(false);
 
@@ -109,6 +107,8 @@ function App() {
 
     setIsExtracting(true);
     setExtractedUrls([]);
+
+    const scheduleUrl = `https://stats.swehockey.se/ScheduleAndResults/Schedule/${scheduleLeagueId}`;
 
     try {
       const response = await fetch(scheduleUrl);
@@ -417,26 +417,30 @@ function App() {
       {/* Schedule URL Extraction Section */}
       <div className="controls">
         <h2>Extract Game URLs from Schedule Page</h2>
-        <p>Extract all /Game/Events/[ID] URLs from a schedule page</p>
-
         <div className="input-group">
           <label>
-            Schedule URL:
-            <input
-              type="text"
-              value={scheduleUrl}
-              onChange={(e) => setScheduleUrl(e.target.value)}
-              placeholder="https://stats.swehockey.se/ScheduleAndResults/Schedule/18986"
+            Liga:
+            <select
+              value={scheduleLeagueId}
+              onChange={(e) => setScheduleLeagueId(e.target.value)}
               disabled={isExtracting}
-              style={{ width: "400px" }}
-            />
+            >
+              <option value="19041">U13P Division 1 Höst</option>
+              <option value="18757">U13P Division 2 A</option>
+              <option value="18756">U13P Division 2 B</option>
+              <option value="18986">U13P DM</option>
+              <option value="18510">Träningsmatcher U13</option>
+              <option value="19034">U14P Division 1 Höst</option>
+              <option value="19037">U14P Division 2A Höst</option>
+              <option value="19039">U14P Division 2B Höst</option>
+            </select>
           </label>
         </div>
 
         <div className="button-group">
           <button
             onClick={extractGameUrls}
-            disabled={isExtracting || !scheduleUrl}
+            disabled={isExtracting || !scheduleLeagueId}
           >
             {isExtracting ? "Extracting..." : "Extract Game URLs"}
           </button>
@@ -445,13 +449,15 @@ function App() {
 
       {extractedUrls.length > 0 && (
         <div className="results">
-          <div className="summary">
+          <div className="summary" style={{ display: "none" }}>
             <h2>Extracted Game URLs</h2>
             <p>Found {extractedUrls.length} unique Game/Events URLs</p>
           </div>
 
           <div className="results-section">
-            <h3>Game URLs ({extractedUrls.length})</h3>
+            <h3 style={{ display: "none" }}>
+              Game URLs ({extractedUrls.length})
+            </h3>
             <div className="results-list">
               {extractedUrls.map((extractedUrl, index) => (
                 <div key={index} className="result-item success">
