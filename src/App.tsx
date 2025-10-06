@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import "./App.css";
 
 interface UrlTestResult {
@@ -32,6 +32,12 @@ function App() {
   const [endId, setEndId] = useState(1100000);
   const [filterMIF, setFilterMIF] = useState(false);
 
+  // Pull to refresh states
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [startY, setStartY] = useState(0);
+  const [isPulling, setIsPulling] = useState(false);
+
   // Schedule URL extraction states
   const [scheduleLeagueId, setScheduleLeagueId] = useState("18986");
   const [extractedUrls, setExtractedUrls] = useState<ExtractedUrl[]>([]);
@@ -45,6 +51,79 @@ function App() {
     null
   );
   const [isExtractingTable, setIsExtractingTable] = useState(false);
+
+  // Pull to refresh functionality
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      // Clear all data
+      setResults([]);
+      setExtractedUrls([]);
+      setTableResult(null);
+      setProgress(0);
+
+      // Force reload the page to get latest version
+      window.location.reload();
+    } catch (error) {
+      console.error("Refresh failed:", error);
+    } finally {
+      setIsRefreshing(false);
+      setPullDistance(0);
+      setIsPulling(false);
+    }
+  };
+
+  // Add touch event listeners
+  useEffect(() => {
+    const app = document.querySelector(".app");
+    if (app) {
+      const touchStart = (e: Event) => {
+        const touchEvent = e as TouchEvent;
+        if (window.scrollY === 0) {
+          setStartY(touchEvent.touches[0].clientY);
+          setIsPulling(false);
+        }
+      };
+
+      const touchMove = (e: Event) => {
+        const touchEvent = e as TouchEvent;
+        if (window.scrollY === 0 && startY > 0) {
+          const currentY = touchEvent.touches[0].clientY;
+          const distance = Math.max(0, currentY - startY);
+
+          if (distance > 10) {
+            setIsPulling(true);
+            setPullDistance(Math.min(distance * 0.5, 80)); // Limit max distance
+
+            // Prevent default scrolling when pulling
+            if (distance > 20) {
+              e.preventDefault();
+            }
+          }
+        }
+      };
+
+      const touchEnd = () => {
+        if (isPulling && pullDistance > 50) {
+          handleRefresh();
+        } else {
+          setPullDistance(0);
+          setIsPulling(false);
+        }
+        setStartY(0);
+      };
+
+      app.addEventListener("touchstart", touchStart, { passive: false });
+      app.addEventListener("touchmove", touchMove, { passive: false });
+      app.addEventListener("touchend", touchEnd);
+
+      return () => {
+        app.removeEventListener("touchstart", touchStart);
+        app.removeEventListener("touchmove", touchMove);
+        app.removeEventListener("touchend", touchEnd);
+      };
+    }
+  }, [isPulling, pullDistance, startY]);
 
   const testUrl = async (id: number): Promise<UrlTestResult> => {
     const url = `https://stats.swehockey.se/Game/Events/${id}`;
@@ -323,6 +402,43 @@ function App() {
 
   return (
     <div className="app">
+      {/* Pull to Refresh Indicator */}
+      {(isPulling || isRefreshing) && (
+        <div
+          className="pull-refresh-indicator"
+          style={{
+            transform: `translateY(${pullDistance - 60}px)`,
+            opacity: isPulling
+              ? Math.min(pullDistance / 50, 1)
+              : isRefreshing
+              ? 1
+              : 0,
+          }}
+        >
+          <div className={`refresh-icon ${isRefreshing ? "spinning" : ""}`}>
+            ↻
+          </div>
+          <div className="refresh-text">
+            {isRefreshing
+              ? "Refreshing..."
+              : pullDistance > 50
+              ? "Release to refresh"
+              : "Pull to refresh"}
+          </div>
+        </div>
+      )}
+
+      {/* Manual Refresh Button */}
+      <div className="manual-refresh">
+        <button
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="refresh-button"
+        >
+          {isRefreshing ? "Refreshing..." : "🔄 Refresh App"}
+        </button>
+      </div>
+
       {/* Table Content Extraction Section */}
       <div className="controls">
         <div className="input-group">
