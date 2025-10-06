@@ -351,9 +351,9 @@ function App() {
               onChange={(e) => setLeagueId(e.target.value)}
               disabled={isExtractingTable}
             >
-              <option value="18756">U13P Division 2B</option>
-              <option value="18757">U13P Division 2A</option>
               <option value="19041">U13P Division 1 Höst</option>
+              <option value="18757">U13P Division 2 A</option>
+              <option value="18756">U13P Division 2 B</option>
               <option value="18510">Träningsmatcher U13</option>
             </select>
           </label>
