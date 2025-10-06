@@ -223,7 +223,7 @@ button:disabled {
 }
 
 .result-item.success {
-  background-color: #d4edda;
+  background-color: #515151;
 }
 
 .result-item.failed {
@@ -239,7 +239,7 @@ button:disabled {
 }
 
 .result-main a {
-  color: #007bff;
+  color: #fff;
   text-decoration: none;
   word-break: break-all;
 }

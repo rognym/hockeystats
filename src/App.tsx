@@ -34,7 +34,7 @@ function App() {
 
   // Schedule URL extraction states
   const [scheduleUrl, setScheduleUrl] = useState(
-    "https://stats.swehockey.se/ScheduleAndResults/Schedule/18991"
+    "https://stats.swehockey.se/ScheduleAndResults/Schedule/18986"
   );
   const [extractedUrls, setExtractedUrls] = useState<ExtractedUrl[]>([]);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -323,29 +323,26 @@ function App() {
 
   return (
     <div className="app">
-      <h1>Swedish Hockey Stats URL Tester</h1>
-
       {/* Table Content Extraction Section */}
       <div className="controls">
-        <h2>Extract Table Content</h2>
-        <p>Extract player statistics tables from Swedish Hockey Stats</p>
-
         <div className="input-group">
           <label>
-            Statistics Category:
+            Kategori:
             <select
               value={statisticsCategory}
               onChange={(e) => setStatisticsCategory(e.target.value)}
               disabled={isExtractingTable}
             >
+              <option value="ScoringLeaders">Point Leaders</option>
               <option value="GoalScoringLeaders">Goal Scoring Leaders</option>
-              <option value="ScoringLeaders">Scoring Leaders</option>
+              <option value="AssistLeaders">Assist Leaders</option>
               <option value="MostPenPlayers">Most Penalized Players</option>
               <option value="LeadingGoaliesSVS">Leading Goalies (Saves)</option>
+              <option value="LeadingGoaliesGAA">Leading Goalies (GAA)</option>
             </select>
           </label>
           <label>
-            League:
+            Liga:
             <select
               value={leagueId}
               onChange={(e) => setLeagueId(e.target.value)}
@@ -363,7 +360,7 @@ function App() {
           </label>
         </div>
 
-        <div className="url-preview">
+        <div className="url-preview" style={{ display: "none" }}>
           <p>
             URL: https://stats.swehockey.se/Players/Statistics/
             {statisticsCategory}/{leagueId}
@@ -375,14 +372,14 @@ function App() {
             onClick={extractTableContent}
             disabled={isExtractingTable || !leagueId || !statisticsCategory}
           >
-            {isExtractingTable ? "Extracting..." : "Extract Table Content"}
+            {isExtractingTable ? "Hämtar..." : "Hämta data"}
           </button>
         </div>
       </div>
 
       {tableResult && (
         <div className="results">
-          <div className="summary">
+          <div className="summary" style={{ display: "none" }}>
             <h2>Table Extraction Result</h2>
             <p>
               Source URL:{" "}
@@ -403,7 +400,6 @@ function App() {
 
           {tableResult.success && tableResult.tableHtml && (
             <div className="results-section">
-              <h3>Extracted Table Content</h3>
               <div className="table-container">
                 <div
                   dangerouslySetInnerHTML={{ __html: tableResult.tableHtml }}
@@ -427,7 +423,7 @@ function App() {
               type="text"
               value={scheduleUrl}
               onChange={(e) => setScheduleUrl(e.target.value)}
-              placeholder="https://stats.swehockey.se/ScheduleAndResults/Schedule/18991"
+              placeholder="https://stats.swehockey.se/ScheduleAndResults/Schedule/18986"
               disabled={isExtracting}
               style={{ width: "400px" }}
             />
@@ -462,17 +458,19 @@ function App() {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      {extractedUrl.fullUrl}
+                      {extractedUrl.title}
                     </a>
-                    {extractedUrl.title && (
-                      <div className="page-title">📄 {extractedUrl.title}</div>
+                    {/*  {extractedUrl.title && (
+                      <div className="page-title">{extractedUrl.title}</div>
                     )}
+                      */}
                   </div>
-                  <div className="result-meta">
+                  {/*<div className="result-meta">
                     <span className="status">
                       Game ID: {extractedUrl.gameId}
                     </span>
                   </div>
+                  */}
                 </div>
               ))}
             </div>
@@ -481,7 +479,7 @@ function App() {
       )}
 
       {/* Original URL Range Testing Section */}
-      <div className="controls">
+      <div className="controls" style={{ display: "none" }}>
         <h2>Test URL Range</h2>
         <p>
           Test URLs in the format: https://stats.swehockey.se/Game/Events/[ID]
