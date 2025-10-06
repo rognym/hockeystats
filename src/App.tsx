@@ -416,10 +416,10 @@ function App() {
 
       {/* Schedule URL Extraction Section */}
       <div className="controls">
-        <h2>Extract Game URLs from Schedule Page</h2>
+        <h2>Hämtar spelade matcher i en serie.</h2>
         <div className="input-group">
           <label>
-            Liga:
+            Serie:
             <select
               value={scheduleLeagueId}
               onChange={(e) => setScheduleLeagueId(e.target.value)}
@@ -442,7 +442,7 @@ function App() {
             onClick={extractGameUrls}
             disabled={isExtracting || !scheduleLeagueId}
           >
-            {isExtracting ? "Extracting..." : "Extract Game URLs"}
+            {isExtracting ? "Hämtar..." : "Hämta matcher"}
           </button>
         </div>
       </div>
