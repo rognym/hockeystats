@@ -13,13 +13,11 @@ To complete the setup, you need to convert these SVG files to PNG format. You ca
 1. **Online conversion**: Use online SVG to PNG converters like:
    - https://convertio.co/svg-png/
    - https://cloudconvert.com/svg-to-png
-   
 2. **Using a design tool**: Open the SVG files in:
    - Adobe Illustrator
    - Figma
    - Canva
    - GIMP
-   
 3. **Command line** (if you have ImageMagick installed):
    ```bash
    magick apple-touch-icon.svg apple-touch-icon.png
@@ -28,8 +26,9 @@ To complete the setup, you need to convert these SVG files to PNG format. You ca
    ```
 
 ## Required PNG files:
+
 - `apple-touch-icon.png` (180x180)
-- `icon-192.png` (192x192) 
+- `icon-192.png` (192x192)
 - `icon-512.png` (512x512)
 
 Place these PNG files in the `/public` folder alongside the SVG files.
@@ -37,6 +36,7 @@ Place these PNG files in the `/public` folder alongside the SVG files.
 ## Icon Design
 
 The icons feature:
+
 - Dark background (#1a1a1a) matching your app theme
 - Hockey puck and stick design
 - "HOCKEY STATS" text
