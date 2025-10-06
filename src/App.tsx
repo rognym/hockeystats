@@ -336,6 +336,9 @@ function App() {
               <option value="ScoringLeaders">Point Leaders</option>
               <option value="GoalScoringLeaders">Goal Scoring Leaders</option>
               <option value="AssistLeaders">Assist Leaders</option>
+              <option value="DecisiveGoalLeaders">
+                Game Winning Goal Leaders
+              </option>
               <option value="MostPenPlayers">Most Penalized Players</option>
               <option value="LeadingGoaliesSVS">Leading Goalies (Saves)</option>
               <option value="LeadingGoaliesGAA">Leading Goalies (GAA)</option>
