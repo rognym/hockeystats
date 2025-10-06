@@ -1,0 +1,25 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="64" fill="#1a1a1a"/>
+  
+  <!-- Hockey Puck -->
+  <circle cx="256" cy="200" r="75" fill="#333" stroke="#646cff" stroke-width="8"/>
+  <circle cx="256" cy="200" r="45" fill="#646cff"/>
+  
+  <!-- Hockey Stick -->
+  <path d="M170 340 L243 267 L251 275 L256 270 L261 275 L269 267 L342 340" stroke="#646cff" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <rect x="243" y="328" width="26" height="75" rx="13" fill="#646cff"/>
+  
+  <!-- Stats Lines -->
+  <rect x="85" y="395" width="85" height="8" rx="4" fill="#646cff" opacity="0.8"/>
+  <rect x="85" y="415" width="60" height="8" rx="4" fill="#646cff" opacity="0.6"/>
+  <rect x="85" y="435" width="72" height="8" rx="4" fill="#646cff" opacity="0.7"/>
+  
+  <rect x="342" y="395" width="85" height="8" rx="4" fill="#646cff" opacity="0.8"/>
+  <rect x="367" y="415" width="60" height="8" rx="4" fill="#646cff" opacity="0.6"/>
+  <rect x="355" y="435" width="72" height="8" rx="4" fill="#646cff" opacity="0.7"/>
+  
+  <!-- Title -->
+  <text x="256" y="100" text-anchor="middle" fill="#646cff" font-family="Arial, sans-serif" font-size="42" font-weight="bold">HOCKEY</text>
+  <text x="256" y="145" text-anchor="middle" fill="#646cff" font-family="Arial, sans-serif" font-size="42" font-weight="bold">STATS</text>
+</svg>
