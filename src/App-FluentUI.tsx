@@ -216,6 +216,7 @@ function FluentApp() {
     { value: "19034", text: "U14P div. 1 höst" },
     { value: "19037", text: "U14P div. 2A Höst" },
     { value: "19039", text: "U14P div. 2B Höst" },
+    { value: "18971", text: "test" },
   ];
 
   // Orientation detection effect
