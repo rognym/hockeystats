@@ -201,6 +201,11 @@ function App() {
     setIsExtracting(true);
     setExtractedUrls([]);
 
+    // Clear other section results
+    setTableResult(null);
+    setOverviewResult(null);
+    setResults([]);
+
     const scheduleUrl = `https://stats.swehockey.se/ScheduleAndResults/Schedule/${scheduleLeagueId}`;
 
     try {
@@ -273,6 +278,11 @@ function App() {
 
     setIsExtractingTable(true);
     setTableResult(null);
+
+    // Clear other section results
+    setExtractedUrls([]);
+    setOverviewResult(null);
+    setResults([]);
 
     const tableUrl = `https://stats.swehockey.se/Players/Statistics/${statisticsCategory}/${leagueId}`;
 
@@ -366,6 +376,11 @@ function App() {
 
     setIsExtractingOverview(true);
     setOverviewResult(null);
+
+    // Clear other section results
+    setExtractedUrls([]);
+    setTableResult(null);
+    setResults([]);
 
     const overviewUrl = `https://stats.swehockey.se/ScheduleAndResults/Overview/${overviewLeagueId}`;
 
@@ -530,6 +545,11 @@ function App() {
     setResults([]);
     setProgress(0);
 
+    // Clear other section results
+    setExtractedUrls([]);
+    setTableResult(null);
+    setOverviewResult(null);
+
     const total = endId - startId + 1;
     const batchSize = 50; // Process in batches to avoid overwhelming the browser
     let tested = 0;
@@ -643,14 +663,14 @@ function App() {
               onChange={(e) => setLeagueId(e.target.value)}
               disabled={isExtractingTable}
             >
-              <option value="19041">U13P Division 1 Höst</option>
-              <option value="18757">U13P Division 2 A</option>
-              <option value="18756">U13P Division 2 B</option>
-              <option value="18986">U13P DM</option>
               <option value="18510">Träningsmatcher U13</option>
+              <option value="18756">U13P Division 2 B</option>
+              <option value="18757">U13P Division 2 A</option>
+              <option value="18986">U13P DM</option>
               <option value="19034">U14P Division 1 Höst</option>
               <option value="19037">U14P Division 2A Höst</option>
               <option value="19039">U14P Division 2B Höst</option>
+              <option value="19041">U13P Division 1 Höst</option>
             </select>
           </label>
         </div>
@@ -717,14 +737,14 @@ function App() {
               onChange={(e) => setScheduleLeagueId(e.target.value)}
               disabled={isExtracting}
             >
-              <option value="19041">U13P Division 1 Höst</option>
-              <option value="18757">U13P Division 2 A</option>
-              <option value="18756">U13P Division 2 B</option>
-              <option value="18986">U13P DM</option>
               <option value="18510">Träningsmatcher U13</option>
+              <option value="18756">U13P Division 2 B</option>
+              <option value="18757">U13P Division 2 A</option>
+              <option value="18986">U13P DM</option>
               <option value="19034">U14P Division 1 Höst</option>
               <option value="19037">U14P Division 2A Höst</option>
               <option value="19039">U14P Division 2B Höst</option>
+              <option value="19041">U13P Division 1 Höst</option>
             </select>
           </label>
         </div>
