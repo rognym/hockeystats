@@ -58,8 +58,12 @@ interface TeamOverviewResult {
 const useStyles = makeStyles({
   app: {
     padding: tokens.spacingHorizontalM,
-    maxWidth: "1200px",
-    margin: "0 auto",
+    width: "100%",
+    margin: "0",
+    minHeight: "100vh",
+    "-webkit-text-size-adjust": "100%",
+    "-ms-text-size-adjust": "100%",
+    "touch-action": "manipulation",
   },
   section: {
     marginBottom: tokens.spacingVerticalXXL,
@@ -212,16 +216,36 @@ function FluentApp() {
       setIsPortraitMobile(isMobile && isPortrait);
     };
 
+    // Prevent zoom on orientation change
+    const preventZoom = (e: Event) => {
+      if (e.type === "orientationchange") {
+        // Wait for orientation change to complete
+        setTimeout(() => {
+          // Force viewport reset
+          const viewport = document.querySelector("meta[name=viewport]");
+          if (viewport) {
+            viewport.setAttribute(
+              "content",
+              "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+            );
+          }
+          checkOrientation();
+        }, 100);
+      } else {
+        checkOrientation();
+      }
+    };
+
     // Check on mount
     checkOrientation();
 
-    // Listen for orientation changes
-    window.addEventListener("resize", checkOrientation);
-    window.addEventListener("orientationchange", checkOrientation);
+    // Listen for orientation changes with zoom prevention
+    window.addEventListener("resize", preventZoom);
+    window.addEventListener("orientationchange", preventZoom);
 
     return () => {
-      window.removeEventListener("resize", checkOrientation);
-      window.removeEventListener("orientationchange", checkOrientation);
+      window.removeEventListener("resize", preventZoom);
+      window.removeEventListener("orientationchange", preventZoom);
     };
   }, []);
 

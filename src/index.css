@@ -24,8 +24,14 @@ a:hover {
 
 body {
   margin: 0;
-
   min-height: 100vh;
+  /* Prevent zoom on mobile */
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  /* Prevent double-tap zoom */
+  touch-action: manipulation;
+  /* Prevent horizontal scrolling */
+  overflow-x: hidden;
 }
 
 h1 {
@@ -62,5 +68,20 @@ button:focus-visible {
   }
   button {
     background-color: #f9f9f9;
+  }
+}
+
+/* Prevent zoom on mobile devices */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
+  
+  /* Prevent zoom during orientation change */
+  html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
   }
 }
