@@ -24,6 +24,14 @@ interface TableExtractionResult {
   debugInfo?: string;
 }
 
+interface TeamOverviewResult {
+  url: string;
+  overviewHtml: string;
+  success: boolean;
+  error?: string;
+  debugInfo?: string;
+}
+
 function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<UrlTestResult[]>([]);
@@ -51,6 +59,12 @@ function App() {
     null
   );
   const [isExtractingTable, setIsExtractingTable] = useState(false);
+
+  // Team overview extraction states
+  const [overviewLeagueId, setOverviewLeagueId] = useState("19041");
+  const [overviewResult, setOverviewResult] =
+    useState<TeamOverviewResult | null>(null);
+  const [isExtractingOverview, setIsExtractingOverview] = useState(false);
 
   // Pull to refresh functionality
   const handleRefresh = async () => {
@@ -347,6 +361,168 @@ function App() {
     setIsExtractingTable(false);
   };
 
+  const extractTeamOverview = async () => {
+    if (isExtractingOverview) return;
+
+    setIsExtractingOverview(true);
+    setOverviewResult(null);
+
+    const overviewUrl = `https://stats.swehockey.se/ScheduleAndResults/Overview/${overviewLeagueId}`;
+
+    try {
+      const response = await fetch(overviewUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch overview page: ${response.status}`);
+      }
+
+      const html = await response.text();
+
+      // Extract the TSMstats container content
+      let overviewHtml = "";
+
+      // Method 1: Find the TSMstats container and extract its full content including nested elements
+      const tsmStartMatch = html.match(
+        /<div[^>]*class[^>]*=["'][^"']*TSMstats[^"']*container-fluid[^"']*["'][^>]*>/i
+      );
+
+      if (tsmStartMatch) {
+        const startIndex = html.indexOf(tsmStartMatch[0]);
+        let divCount = 1;
+        let endIndex = startIndex + tsmStartMatch[0].length;
+
+        // Find the matching closing div by counting nested divs
+        while (endIndex < html.length && divCount > 0) {
+          const nextDiv = html.indexOf("<div", endIndex);
+          const nextCloseDiv = html.indexOf("</div>", endIndex);
+
+          if (nextCloseDiv === -1) break;
+
+          if (nextDiv !== -1 && nextDiv < nextCloseDiv) {
+            divCount++;
+            endIndex = nextDiv + 4;
+          } else {
+            divCount--;
+            endIndex = nextCloseDiv + 6;
+          }
+        }
+
+        if (divCount === 0) {
+          overviewHtml = html.substring(startIndex, endIndex);
+        }
+      }
+
+      // Method 2: If Method 1 failed, try a broader search for TSMstats content
+      if (!overviewHtml) {
+        const broadMatch = html.match(
+          /class[^>]*=["'][^"']*TSMstats[^"']*["'][^>]*>[\s\S]*?(?=<div[^>]*class(?![^>]*TSMstats)|<\/body>|<\/html>|$)/i
+        );
+
+        if (broadMatch) {
+          overviewHtml = `<div ${broadMatch[0]}`;
+        }
+      }
+
+      // Method 3: Extract everything between TSMstats start and a logical end point
+      if (!overviewHtml) {
+        const startPattern = /<div[^>]*class[^>]*TSMstats[^>]*>/i;
+        const startMatch = html.match(startPattern);
+
+        if (startMatch) {
+          const startIndex = html.indexOf(startMatch[0]);
+          const endPatterns = [
+            /<div[^>]*class[^>]*(?!.*TSMstats)/i, // Next div without TSMstats
+            /<footer/i,
+            /<script/i,
+            /<\/body>/i,
+          ];
+
+          let endIndex = html.length;
+          endPatterns.forEach((pattern) => {
+            const match = html.substring(startIndex + 1000).match(pattern); // Look after 1000 chars
+            if (match) {
+              const foundIndex =
+                startIndex +
+                1000 +
+                html.substring(startIndex + 1000).indexOf(match[0]);
+              if (foundIndex < endIndex) endIndex = foundIndex;
+            }
+          });
+
+          overviewHtml = html.substring(startIndex, endIndex);
+        }
+      }
+
+      // Method 4: Last resort - search for any content with TSMstats
+      if (!overviewHtml) {
+        const allDivMatches = html.match(/<div[\s\S]*?TSMstats[\s\S]*?>/gi);
+        if (allDivMatches && allDivMatches.length > 0) {
+          // Find the largest match (most likely to be the complete container)
+          let largestMatch = "";
+          allDivMatches.forEach((match) => {
+            const startIndex = html.indexOf(match);
+            if (startIndex !== -1) {
+              // Extract a larger portion around this match
+              const beforeIndex = Math.max(0, startIndex - 100);
+              const afterIndex = Math.min(html.length, startIndex + 5000);
+              const section = html.substring(beforeIndex, afterIndex);
+              if (section.length > largestMatch.length) {
+                largestMatch = section;
+              }
+            }
+          });
+          overviewHtml = largestMatch;
+        }
+      }
+
+      if (overviewHtml) {
+        // Clean up the HTML and ensure it's properly formatted
+        overviewHtml = overviewHtml.trim();
+
+        // Debug info
+        const divCount = (overviewHtml.match(/<div[^>]*>/gi) || []).length;
+        const tableCount = (overviewHtml.match(/<table[^>]*>/gi) || []).length;
+        const textLength = overviewHtml.replace(/<[^>]*>/g, "").trim().length;
+        const hasStats =
+          overviewHtml.toLowerCase().includes("stats") ||
+          overviewHtml.toLowerCase().includes("statistik") ||
+          overviewHtml.toLowerCase().includes("points") ||
+          overviewHtml.toLowerCase().includes("goals");
+
+        setOverviewResult({
+          url: overviewUrl,
+          overviewHtml: overviewHtml,
+          success: true,
+          debugInfo: `Overview extracted: ${textLength} chars, ${divCount} divs, ${tableCount} tables, Stats content: ${
+            hasStats ? "Yes" : "No"
+          }`,
+        });
+      } else {
+        // Debug: Show what was found in the HTML
+        const hasTSMstats = html.includes("TSMstats");
+        const hasContainerFluid = html.includes("container-fluid");
+        const allTSMMatches = html.match(/TSMstats/gi) || [];
+        const htmlSnippet = html.substring(0, 1000) + "...";
+
+        setOverviewResult({
+          url: overviewUrl,
+          overviewHtml: "",
+          success: false,
+          error: `No TSMstats container found. TSMstats present: ${hasTSMstats}, container-fluid present: ${hasContainerFluid}, TSMstats matches: ${allTSMMatches.length}. HTML preview: ${htmlSnippet}`,
+        });
+      }
+    } catch (error) {
+      console.error("Error extracting team overview:", error);
+      setOverviewResult({
+        url: overviewUrl,
+        overviewHtml: "",
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+
+    setIsExtractingOverview(false);
+  };
+
   const runTests = useCallback(async () => {
     if (isRunning) return;
 
@@ -600,6 +776,79 @@ function App() {
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Team Overview Statistics Section */}
+      <div className="controls">
+        <h2>Hämta lagoversikt och statistik</h2>
+        <p>Hämta översiktsdata och statistik från ligans översiktssida</p>
+
+        <div className="input-group">
+          <label>
+            Liga:
+            <select
+              value={overviewLeagueId}
+              onChange={(e) => setOverviewLeagueId(e.target.value)}
+              disabled={isExtractingOverview}
+            >
+              <option value="19041">U13P Division 1 Höst</option>
+              <option value="18757">U13P Division 2 A</option>
+              <option value="18756">U13P Division 2 B</option>
+              <option value="18986">U13P DM</option>
+              <option value="18510">Träningsmatcher U13</option>
+              <option value="19034">U14P Division 1 Höst</option>
+              <option value="19037">U14P Division 2A Höst</option>
+              <option value="19039">U14P Division 2B Höst</option>
+            </select>
+          </label>
+        </div>
+
+        <div className="button-group">
+          <button
+            onClick={extractTeamOverview}
+            disabled={isExtractingOverview || !overviewLeagueId}
+          >
+            {isExtractingOverview ? "Hämtar..." : "Hämta översikt"}
+          </button>
+        </div>
+      </div>
+
+      {overviewResult && (
+        <div className="results">
+          <div className="summary" style={{ display: "none" }}>
+            <h2>Team Overview Result</h2>
+            <p>
+              Source URL:{" "}
+              <a
+                href={overviewResult.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {overviewResult.url}
+              </a>
+            </p>
+            <p>Status: {overviewResult.success ? "✅ Success" : "❌ Failed"}</p>
+            {overviewResult.debugInfo && (
+              <p>Debug: {overviewResult.debugInfo}</p>
+            )}
+            {!overviewResult.success && overviewResult.error && (
+              <p>Error: {overviewResult.error}</p>
+            )}
+          </div>
+
+          {overviewResult.success && overviewResult.overviewHtml && (
+            <div className="results-section">
+              <div className="table-container">
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: overviewResult.overviewHtml,
+                  }}
+                  className="extracted-table"
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
 
