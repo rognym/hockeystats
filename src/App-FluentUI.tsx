@@ -15,7 +15,6 @@ import {
   MessageBar,
   MessageBarBody,
   Field,
-  Badge,
   tokens,
   Accordion,
   AccordionItem,
@@ -24,7 +23,6 @@ import {
 } from "@fluentui/react-components";
 import {
   DatabaseSearchRegular,
-  CalendarSearchRegular,
   DataBarHorizontalRegular,
   ArrowSyncRegular,
   CheckmarkCircleRegular,
@@ -32,15 +30,8 @@ import {
   PeopleStarFilled,
   PeopleTeamFilled,
   SportHockeyRegular,
-  CalendarCheckmarkFilled,
   PhoneScreenTimeRegular,
 } from "@fluentui/react-icons";
-
-interface ExtractedUrl {
-  gameId: string;
-  fullUrl: string;
-  title?: string;
-}
 
 interface TableExtractionResult {
   url: string;
@@ -134,6 +125,17 @@ const useStyles = makeStyles({
         fontWeight: tokens.fontWeightSemibold,
       },
     },
+    "& a": {
+      color: tokens.colorBrandForeground1,
+      textDecoration: "none",
+      "&:hover": {
+        textDecoration: "underline",
+        color: tokens.colorBrandForeground2,
+      },
+      "&:visited": {
+        color: tokens.colorBrandForeground1,
+      },
+    },
   },
   rotationPrompt: {
     position: "fixed",
@@ -188,11 +190,6 @@ function FluentApp() {
 
   // Pull to refresh states
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Schedule URL extraction states
-  const [scheduleLeagueId, setScheduleLeagueId] = useState("18986");
-  const [extractedUrls, setExtractedUrls] = useState<ExtractedUrl[]>([]);
-  const [isExtracting, setIsExtracting] = useState(false);
 
   // Table extraction states
   const [statisticsCategory, setStatisticsCategory] =
@@ -278,7 +275,6 @@ function FluentApp() {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      setExtractedUrls([]);
       setTableResult(null);
       setOverviewResult(null);
       window.location.reload();
@@ -289,11 +285,90 @@ function FluentApp() {
     }
   };
 
+  /**
+   * Converts JavaScript openonlinewindow links to proper HTTPS URLs
+   *
+   * Handles various formats:
+   * - href="javascript:openonlinewindow('/Game/Events/1017728','')"
+   * - Multi-line formats with whitespace
+   * - onclick handlers
+   *
+   * @param html - The HTML string containing JavaScript links
+   * @returns The HTML string with converted HTTPS links
+   *
+   * @example
+   * const html = '<a href="javascript:openonlinewindow(\'/Game/Events/1017728\',\'\')">Game</a>';
+   * const converted = convertOpenOnlineWindowLinks(html);
+   * // Result: '<a href="https://stats.swehockey.se/Game/Events/1017728" target="_blank" rel="noopener noreferrer">Game</a>'
+   */
+  const convertOpenOnlineWindowLinks = (html: string): string => {
+    let convertedHtml = html;
+
+    // Handle multi-line format with whitespace and line breaks:
+    // href="
+    //   javascript:openonlinewindow('/Game/Events/1017728','')
+    // "
+    convertedHtml = convertedHtml.replace(
+      /href="\s*javascript:openonlinewindow\('([^']+)',\s*'[^']*'\)\s*"/gis,
+      'href="https://stats.swehockey.se$1" target="_blank" rel="noopener noreferrer"'
+    );
+
+    // Handle format without quotes in the second parameter
+    convertedHtml = convertedHtml.replace(
+      /href="\s*javascript:openonlinewindow\(([^,)]+),\s*[^)]*\)\s*"/gis,
+      (_, path) => {
+        // Remove any quotes from the path
+        const cleanPath = path.replace(/['"]/g, "");
+        return `href="https://stats.swehockey.se${cleanPath}" target="_blank" rel="noopener noreferrer"`;
+      }
+    );
+
+    // Fallback: Handle single parameter format if any exist
+    convertedHtml = convertedHtml.replace(
+      /href="\s*javascript:openonlinewindow\('([^']+)'\)\s*"/gis,
+      'href="https://stats.swehockey.se$1" target="_blank" rel="noopener noreferrer"'
+    );
+
+    // Additional fallback for any remaining onclick handlers
+    convertedHtml = convertedHtml.replace(
+      /onclick="\s*openonlinewindow\('([^']+)',\s*'[^']*'\)\s*"/gis,
+      "onclick=\"window.open('https://stats.swehockey.se$1', '_blank', 'noopener,noreferrer')\""
+    );
+
+    // Handle any remaining openonlinewindow function calls (not in attributes)
+    convertedHtml = convertedHtml.replace(
+      /openonlinewindow\('([^']+)',\s*'[^']*'\)/gis,
+      "window.open('https://stats.swehockey.se$1', '_blank', 'noopener,noreferrer')"
+    );
+
+    // Handle single parameter openonlinewindow calls
+    convertedHtml = convertedHtml.replace(
+      /openonlinewindow\('([^']+)'\)/gis,
+      "window.open('https://stats.swehockey.se$1', '_blank', 'noopener,noreferrer')"
+    );
+
+    return convertedHtml;
+  };
+
+  // Global fallback function for any remaining openonlinewindow calls
+  useEffect(() => {
+    // Define a global fallback function to prevent errors
+    (window as any).openonlinewindow = (url: string, _target?: string) => {
+      window.open(`https://stats.swehockey.se${url}`, '_blank', 'noopener,noreferrer');
+    };
+
+    // Cleanup function
+    return () => {
+      if ((window as any).openonlinewindow) {
+        delete (window as any).openonlinewindow;
+      }
+    };
+  }, []);
+
   const extractTableContent = async () => {
     if (isExtractingTable) return;
     setIsExtractingTable(true);
     setTableResult(null);
-    setExtractedUrls([]);
     setOverviewResult(null);
 
     const tableUrl = `https://stats.swehockey.se/Players/Statistics/${statisticsCategory}/${leagueId}`;
@@ -371,72 +446,13 @@ function FluentApp() {
     setIsExtractingTable(false);
   };
 
-  const extractGameUrls = async () => {
-    if (isExtracting) return;
-    setIsExtracting(true);
-    setExtractedUrls([]);
-    setTableResult(null);
-    setOverviewResult(null);
-
-    const scheduleUrl = `https://stats.swehockey.se/ScheduleAndResults/Schedule/${scheduleLeagueId}`;
-
-    try {
-      const response = await fetch(scheduleUrl);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch schedule page: ${response.status}`);
-      }
-
-      const html = await response.text();
-      const gameUrlPattern = /\/Game\/Events\/(\d+)/g;
-      const matches = [...html.matchAll(gameUrlPattern)];
-      const uniqueUrls = new Map<string, ExtractedUrl>();
-
-      for (const match of matches) {
-        const gameId = match[1];
-        const fullUrl = `https://stats.swehockey.se/Game/Events/${gameId}`;
-        if (!uniqueUrls.has(gameId)) {
-          uniqueUrls.set(gameId, { gameId, fullUrl });
-        }
-      }
-
-      const urlArray = Array.from(uniqueUrls.values());
-      const urlsWithTitles = await Promise.all(
-        urlArray.map(async (extractedUrl) => {
-          try {
-            const titleResponse = await fetch(extractedUrl.fullUrl);
-            if (titleResponse.ok) {
-              const titleHtml = await titleResponse.text();
-              const titleMatch = titleHtml.match(
-                /<title[^>]*>([^<]+)<\/title>/i
-              );
-              return {
-                ...extractedUrl,
-                title: titleMatch ? titleMatch[1].trim() : "No title found",
-              };
-            }
-          } catch (error) {
-            // If title fetch fails, return without title
-          }
-          return extractedUrl;
-        })
-      );
-
-      setExtractedUrls(urlsWithTitles);
-    } catch (error) {
-      console.error("Error extracting URLs:", error);
-    }
-
-    setIsExtracting(false);
-  };
-
   const extractTeamOverview = async () => {
     if (isExtractingOverview) return;
     setIsExtractingOverview(true);
     setOverviewResult(null);
-    setExtractedUrls([]);
     setTableResult(null);
 
-    const overviewUrl = `https://stats.swehockey.se/ScheduleAndResults/Overview/${overviewLeagueId}`;
+    const overviewUrl = `https://stats.swehockey.se/ScheduleAndResults/Schedule/${overviewLeagueId}`;
 
     try {
       const response = await fetch(overviewUrl);
@@ -478,6 +494,10 @@ function FluentApp() {
 
       if (overviewHtml) {
         overviewHtml = overviewHtml.trim();
+
+        // Convert JavaScript openonlinewindow links to proper HTTPS URLs
+        overviewHtml = convertOpenOnlineWindowLinks(overviewHtml);
+
         const divCount = (overviewHtml.match(/<div[^>]*>/gi) || []).length;
         const tableCount = (overviewHtml.match(/<table[^>]*>/gi) || []).length;
         const textLength = overviewHtml.replace(/<[^>]*>/g, "").trim().length;
@@ -679,118 +699,13 @@ function FluentApp() {
             </AccordionPanel>
           </AccordionItem>
 
-          {/* Game URLs Section */}
-          <AccordionItem value="games">
-            <AccordionHeader icon={<CalendarCheckmarkFilled />}>
-              <Title3>Played Games</Title3>
-            </AccordionHeader>
-            <AccordionPanel>
-              <Card className={styles.section}>
-                <CardHeader
-                  description={
-                    <Text>Hämta alla spelade matcher i en serie.</Text>
-                  }
-                />
-                <div className={styles.controls}>
-                  <div className={styles.formRow}>
-                    <Field label="League">
-                      <Dropdown
-                        className={styles.dropdown}
-                        value={
-                          leagueOptions.find(
-                            (opt) => opt.value === scheduleLeagueId
-                          )?.text
-                        }
-                        onOptionSelect={(_, data) =>
-                          setScheduleLeagueId(data.optionValue as string)
-                        }
-                        disabled={isExtracting}
-                      >
-                        {leagueOptions.map((option) => (
-                          <Option key={option.value} value={option.value}>
-                            {option.text}
-                          </Option>
-                        ))}
-                      </Dropdown>
-                    </Field>
-                  </div>
-
-                  <div className={styles.buttonGroup}>
-                    <Button
-                      appearance="primary"
-                      icon={
-                        isExtracting ? (
-                          <Spinner size="tiny" />
-                        ) : (
-                          <CalendarSearchRegular />
-                        )
-                      }
-                      onClick={extractGameUrls}
-                      disabled={isExtracting || !scheduleLeagueId}
-                    >
-                      {isExtracting ? "Extracting..." : "Extract Games"}
-                    </Button>
-                  </div>
-                </div>
-
-                {extractedUrls.length > 0 && (
-                  <Card className={styles.resultCard}>
-                    <CardHeader
-                      header={
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: tokens.spacingHorizontalXS,
-                          }}
-                        >
-                          <CheckmarkCircleRegular
-                            style={{
-                              color: tokens.colorPaletteGreenForeground1,
-                            }}
-                          />
-                          <Text weight="semibold">Games Found</Text>
-                          <Badge size="small" color="brand">
-                            {extractedUrls.length}
-                          </Badge>
-                        </div>
-                      }
-                    />
-                    <div className={styles.resultsList}>
-                      {extractedUrls.map((url, index) => (
-                        <div key={index} className={styles.resultItem}>
-                          <a
-                            href={url.fullUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {url.title}
-                          </a>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-                )}
-              </Card>
-            </AccordionPanel>
-          </AccordionItem>
-
           {/* Team Overview Section */}
           <AccordionItem value="overview">
             <AccordionHeader icon={<PeopleTeamFilled />}>
-              <Title3>Team Statistics</Title3>
+              <Title3>Schedule and Results</Title3>
             </AccordionHeader>
             <AccordionPanel>
               <Card className={styles.section}>
-                <CardHeader
-                  header={<Text weight="semibold">Extract Team Overview</Text>}
-                  description={
-                    <Text>
-                      Get team overview and statistics from league overview
-                      pages
-                    </Text>
-                  }
-                />
                 <div className={styles.controls}>
                   <div className={styles.formRow}>
                     <Field label="League">
