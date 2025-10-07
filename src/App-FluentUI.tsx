@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState } from "react";
 import {
   FluentProvider,
   webDarkTheme,
@@ -32,15 +32,6 @@ import {
   SportHockeyRegular,
 } from "@fluentui/react-icons";
 
-interface UrlTestResult {
-  url: string;
-  status: number | null;
-  success: boolean;
-  responseTime: number;
-  title?: string;
-  error?: string;
-}
-
 interface ExtractedUrl {
   gameId: string;
   fullUrl: string;
@@ -66,8 +57,8 @@ interface TeamOverviewResult {
 const useStyles = makeStyles({
   app: {
     padding: tokens.spacingHorizontalM,
-    width: "100%",
-    margin: "0",
+    maxWidth: "1200px",
+    margin: "0 auto",
   },
   section: {
     marginBottom: tokens.spacingVerticalXXL,
@@ -136,19 +127,8 @@ const useStyles = makeStyles({
 function FluentApp() {
   const styles = useStyles();
 
-  // All your existing state variables
-  const [isRunning, setIsRunning] = useState(false);
-  const [results, setResults] = useState<UrlTestResult[]>([]);
-  const [progress, setProgress] = useState(0);
-  const [startId, setStartId] = useState(1000000);
-  const [endId, setEndId] = useState(1100000);
-  const [filterMIF, setFilterMIF] = useState(false);
-
   // Pull to refresh states
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [pullDistance, setPullDistance] = useState(0);
-  const [startY, setStartY] = useState(0);
-  const [isPulling, setIsPulling] = useState(false);
 
   // Schedule URL extraction states
   const [scheduleLeagueId, setScheduleLeagueId] = useState("18986");
@@ -165,7 +145,7 @@ function FluentApp() {
   const [isExtractingTable, setIsExtractingTable] = useState(false);
 
   // Team overview extraction states
-  const [overviewLeagueId, setOverviewLeagueId] = useState("18757");
+  const [overviewLeagueId, setOverviewLeagueId] = useState("19041");
   const [overviewResult, setOverviewResult] =
     useState<TeamOverviewResult | null>(null);
   const [isExtractingOverview, setIsExtractingOverview] = useState(false);
@@ -178,8 +158,8 @@ function FluentApp() {
     { value: "18756", text: "U13P div. 2B höst" },
     { value: "18986", text: "U13P DM" },
     { value: "19034", text: "U14P div. 1 höst" },
-    { value: "19037", text: "U14P div. 2A höst" },
-    { value: "19039", text: "U14P div. 2B höst" },
+    { value: "19037", text: "U14P div. 2A Höst" },
+    { value: "19039", text: "U14P div. 2B Höst" },
   ];
 
   const statisticsOptions = [
@@ -198,18 +178,14 @@ function FluentApp() {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      setResults([]);
       setExtractedUrls([]);
       setTableResult(null);
       setOverviewResult(null);
-      setProgress(0);
       window.location.reload();
     } catch (error) {
       console.error("Refresh failed:", error);
     } finally {
       setIsRefreshing(false);
-      setPullDistance(0);
-      setIsPulling(false);
     }
   };
 
@@ -219,7 +195,6 @@ function FluentApp() {
     setTableResult(null);
     setExtractedUrls([]);
     setOverviewResult(null);
-    setResults([]);
 
     const tableUrl = `https://stats.swehockey.se/Players/Statistics/${statisticsCategory}/${leagueId}`;
 
@@ -302,7 +277,6 @@ function FluentApp() {
     setExtractedUrls([]);
     setTableResult(null);
     setOverviewResult(null);
-    setResults([]);
 
     const scheduleUrl = `https://stats.swehockey.se/ScheduleAndResults/Schedule/${scheduleLeagueId}`;
 
@@ -361,7 +335,6 @@ function FluentApp() {
     setOverviewResult(null);
     setExtractedUrls([]);
     setTableResult(null);
-    setResults([]);
 
     const overviewUrl = `https://stats.swehockey.se/ScheduleAndResults/Overview/${overviewLeagueId}`;
 
