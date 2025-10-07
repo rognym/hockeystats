@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FluentProvider,
   webDarkTheme,
@@ -30,6 +30,7 @@ import {
   CheckmarkCircleRegular,
   ErrorCircleRegular,
   SportHockeyRegular,
+  PhoneScreenTimeRegular,
 } from "@fluentui/react-icons";
 
 interface ExtractedUrl {
@@ -122,10 +123,51 @@ const useStyles = makeStyles({
       },
     },
   },
+  rotationPrompt: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.9)",
+    zIndex: 9999,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    color: tokens.colorNeutralForeground1,
+    textAlign: "center",
+    padding: tokens.spacingHorizontalXL,
+  },
+  phoneIcon: {
+    fontSize: "80px",
+    marginBottom: tokens.spacingVerticalXL,
+    animationName: {
+      "0%": { transform: "rotate(0deg)" },
+      "25%": { transform: "rotate(-15deg)" },
+      "75%": { transform: "rotate(15deg)" },
+      "100%": { transform: "rotate(90deg)" },
+    },
+    animationDuration: "2s",
+    animationIterationCount: "infinite",
+    animationTimingFunction: "ease-in-out",
+  },
+  rotationText: {
+    fontSize: tokens.fontSizeBase500,
+    fontWeight: tokens.fontWeightSemibold,
+    marginBottom: tokens.spacingVerticalM,
+  },
+  rotationSubtext: {
+    fontSize: tokens.fontSizeBase300,
+    opacity: 0.8,
+  },
 });
 
 function FluentApp() {
   const styles = useStyles();
+
+  // Orientation detection states
+  const [isPortraitMobile, setIsPortraitMobile] = useState(false);
 
   // Pull to refresh states
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -161,6 +203,27 @@ function FluentApp() {
     { value: "19037", text: "U14P div. 2A Höst" },
     { value: "19039", text: "U14P div. 2B Höst" },
   ];
+
+  // Orientation detection effect
+  useEffect(() => {
+    const checkOrientation = () => {
+      const isMobile = window.innerWidth <= 768; // Mobile breakpoint
+      const isPortrait = window.innerHeight > window.innerWidth;
+      setIsPortraitMobile(isMobile && isPortrait);
+    };
+
+    // Check on mount
+    checkOrientation();
+
+    // Listen for orientation changes
+    window.addEventListener("resize", checkOrientation);
+    window.addEventListener("orientationchange", checkOrientation);
+
+    return () => {
+      window.removeEventListener("resize", checkOrientation);
+      window.removeEventListener("orientationchange", checkOrientation);
+    };
+  }, []);
 
   const statisticsOptions = [
     { value: "ScoringLeaders", text: "Point Leaders" },
@@ -413,6 +476,17 @@ function FluentApp() {
 
   return (
     <FluentProvider theme={webDarkTheme}>
+      {/* Rotation Prompt Overlay */}
+      {isPortraitMobile && (
+        <div className={styles.rotationPrompt}>
+          <PhoneScreenTimeRegular className={styles.phoneIcon} />
+          <div className={styles.rotationText}>Please rotate your device</div>
+          <div className={styles.rotationSubtext}>
+            This app works best in landscape mode
+          </div>
+        </div>
+      )}
+
       <div className={styles.app}>
         {/* Theme Toggle and Refresh Button */}
         <div className={styles.refreshButton}>
