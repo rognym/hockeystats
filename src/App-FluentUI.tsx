@@ -67,6 +67,11 @@ const useStyles = makeStyles({
     "-webkit-text-size-adjust": "100%",
     "-ms-text-size-adjust": "100%",
     "touch-action": "manipulation",
+    /* Safe area insets for iPhone notch/camera */
+    paddingTop: `max(${tokens.spacingVerticalM}, env(safe-area-inset-top))`,
+    paddingBottom: `max(${tokens.spacingVerticalM}, env(safe-area-inset-bottom))`,
+    paddingLeft: `max(${tokens.spacingHorizontalM}, env(safe-area-inset-left))`,
+    paddingRight: `max(${tokens.spacingHorizontalM}, env(safe-area-inset-right))`,
   },
   section: {
     marginBottom: tokens.spacingVerticalXXL,
@@ -110,8 +115,8 @@ const useStyles = makeStyles({
   },
   refreshButton: {
     position: "fixed",
-    top: tokens.spacingVerticalM,
-    right: tokens.spacingHorizontalM,
+    top: `max(${tokens.spacingVerticalM}, env(safe-area-inset-top))`,
+    right: `max(${tokens.spacingHorizontalM}, env(safe-area-inset-right))`,
     zIndex: 1000,
   },
   extractedTable: {
@@ -145,6 +150,11 @@ const useStyles = makeStyles({
     color: tokens.colorNeutralForeground1,
     textAlign: "center",
     padding: tokens.spacingHorizontalXL,
+    /* Safe area insets for rotation prompt */
+    paddingTop: `max(${tokens.spacingHorizontalXL}, env(safe-area-inset-top))`,
+    paddingBottom: `max(${tokens.spacingHorizontalXL}, env(safe-area-inset-bottom))`,
+    paddingLeft: `max(${tokens.spacingHorizontalXL}, env(safe-area-inset-left))`,
+    paddingRight: `max(${tokens.spacingHorizontalXL}, env(safe-area-inset-right))`,
   },
   phoneIcon: {
     fontSize: "80px",

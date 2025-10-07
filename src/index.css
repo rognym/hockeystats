@@ -13,6 +13,13 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Support for older browsers that don't support env() */
+html {
+  /* Fallback for browsers without safe-area-inset support */
+  padding: 0;
+  margin: 0;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -83,5 +90,15 @@ button:focus-visible {
   html {
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
+  }
+  
+  /* Ensure accordion headers are not behind camera on iPhone */
+  [role="button"][aria-expanded] {
+    margin-top: env(safe-area-inset-top, 0) !important;
+  }
+  
+  /* Additional safe area support for iOS */
+  body {
+    padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
   }
 }
