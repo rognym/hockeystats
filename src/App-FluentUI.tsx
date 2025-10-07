@@ -354,7 +354,11 @@ function FluentApp() {
   useEffect(() => {
     // Define a global fallback function to prevent errors
     (window as any).openonlinewindow = (url: string, _target?: string) => {
-      window.open(`https://stats.swehockey.se${url}`, '_blank', 'noopener,noreferrer');
+      window.open(
+        `https://stats.swehockey.se${url}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
     };
 
     // Cleanup function
