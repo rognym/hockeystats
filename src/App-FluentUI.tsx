@@ -29,7 +29,10 @@ import {
   ArrowSyncRegular,
   CheckmarkCircleRegular,
   ErrorCircleRegular,
+  PeopleStarFilled,
+  PeopleTeamFilled,
   SportHockeyRegular,
+  CalendarCheckmarkFilled,
   PhoneScreenTimeRegular,
 } from "@fluentui/react-icons";
 
@@ -532,28 +535,22 @@ function FluentApp() {
           }}
         >
           <SportHockeyRegular
-            style={{ fontSize: "48px", color: tokens.colorBrandBackground }}
+            style={{
+              fontSize: "48px",
+              color: "#a20000ff", // Replace with any valid CSS color or Fluent token
+            }}
           />
-          <Title3>Hockey Stats Tool</Title3>
         </div>
 
         {/* Accordion Sections */}
         <Accordion multiple collapsible>
           {/* Player Statistics Section */}
           <AccordionItem value="statistics">
-            <AccordionHeader icon={<DatabaseSearchRegular />}>
+            <AccordionHeader icon={<PeopleStarFilled />}>
               <Title3>Player Statistics</Title3>
             </AccordionHeader>
             <AccordionPanel>
               <Card className={styles.section}>
-                <CardHeader
-                  header={
-                    <Text weight="semibold">Extract Player Statistics</Text>
-                  }
-                  description={
-                    <Text>Get player statistics from league pages</Text>
-                  }
-                />
                 <div className={styles.controls}>
                   <div className={styles.formRow}>
                     <Field label="Category">
@@ -674,15 +671,14 @@ function FluentApp() {
 
           {/* Game URLs Section */}
           <AccordionItem value="games">
-            <AccordionHeader icon={<CalendarSearchRegular />}>
-              <Title3>Game URLs</Title3>
+            <AccordionHeader icon={<CalendarCheckmarkFilled />}>
+              <Title3>Played Games</Title3>
             </AccordionHeader>
             <AccordionPanel>
               <Card className={styles.section}>
                 <CardHeader
-                  header={<Text weight="semibold">Extract Game URLs</Text>}
                   description={
-                    <Text>Get all game URLs from schedule pages</Text>
+                    <Text>Hämta alla spelade matcher i en serie.</Text>
                   }
                 />
                 <div className={styles.controls}>
@@ -771,8 +767,8 @@ function FluentApp() {
 
           {/* Team Overview Section */}
           <AccordionItem value="overview">
-            <AccordionHeader icon={<DataBarHorizontalRegular />}>
-              <Title3>Team Overview</Title3>
+            <AccordionHeader icon={<PeopleTeamFilled />}>
+              <Title3>Team Statistics</Title3>
             </AccordionHeader>
             <AccordionPanel>
               <Card className={styles.section}>
