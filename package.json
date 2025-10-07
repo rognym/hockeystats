@@ -13,6 +13,8 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@fluentui/react-components": "^9.72.1",
+    "@fluentui/react-icons": "^2.0.311",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },

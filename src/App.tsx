@@ -664,13 +664,13 @@ function App() {
               disabled={isExtractingTable}
             >
               <option value="18510">Träningsmatcher U13</option>
-              <option value="18756">U13P Division 2 B</option>
-              <option value="18757">U13P Division 2 A</option>
               <option value="18986">U13P DM</option>
+              <option value="18757">U13P Division 2A Höst</option>
+              <option value="18756">U13P Division 2B Höst</option>
+              <option value="19041">U13P Division 1 Höst</option>
               <option value="19034">U14P Division 1 Höst</option>
               <option value="19037">U14P Division 2A Höst</option>
               <option value="19039">U14P Division 2B Höst</option>
-              <option value="19041">U13P Division 1 Höst</option>
             </select>
           </label>
         </div>
@@ -738,13 +738,13 @@ function App() {
               disabled={isExtracting}
             >
               <option value="18510">Träningsmatcher U13</option>
-              <option value="18756">U13P Division 2 B</option>
-              <option value="18757">U13P Division 2 A</option>
               <option value="18986">U13P DM</option>
+              <option value="18757">U13P Division 2A Höst</option>
+              <option value="18756">U13P Division 2B Höst</option>
+              <option value="19041">U13P Division 1 Höst</option>
               <option value="19034">U14P Division 1 Höst</option>
               <option value="19037">U14P Division 2A Höst</option>
               <option value="19039">U14P Division 2B Höst</option>
-              <option value="19041">U13P Division 1 Höst</option>
             </select>
           </label>
         </div>
