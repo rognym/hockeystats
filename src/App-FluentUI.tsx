@@ -409,6 +409,68 @@ function FluentApp() {
     return convertedHtml;
   };
 
+  // Function to add d-none class to specific columns for mobile hiding
+  const addMobileHidingClasses = (html: string): string => {
+    // Keywords that indicate columns to hide on mobile devices
+    const hideKeywords = ["åskådare", "spectators", "publik", "arena", "venue"];
+
+    try {
+      // Create a temporary DOM element to parse the HTML
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = html;
+
+      // Find all tables
+      const tables = tempDiv.querySelectorAll("table");
+
+      tables.forEach((table) => {
+        const headerRow = table.querySelector("tr");
+        if (!headerRow) return;
+
+        const headers = headerRow.querySelectorAll("th, td");
+        const columnsToHide: number[] = [];
+
+        // Identify columns to hide based on header text
+        headers.forEach((header, index) => {
+          const headerText = header.textContent?.toLowerCase().trim() || "";
+          const shouldHide = hideKeywords.some(
+            (keyword) => headerText === keyword || headerText.includes(keyword)
+          );
+
+          if (shouldHide) {
+            columnsToHide.push(index);
+            console.log(
+              `Marking column ${index} for mobile hiding: "${header.textContent}"`
+            );
+          }
+        });
+
+        // Safety check: only hide if we're hiding 2 or fewer columns
+        if (columnsToHide.length > 2) {
+          console.warn(
+            `Too many columns would be hidden (${columnsToHide.length}), skipping mobile optimization for this table`
+          );
+          return;
+        }
+
+        // Add d-none class to identified columns
+        const allRows = table.querySelectorAll("tr");
+        allRows.forEach((row) => {
+          const cells = row.querySelectorAll("th, td");
+          columnsToHide.forEach((columnIndex) => {
+            if (cells[columnIndex]) {
+              cells[columnIndex].classList.add("d-none");
+            }
+          });
+        });
+      });
+
+      return tempDiv.innerHTML;
+    } catch (error) {
+      console.warn("Error adding mobile hiding classes:", error);
+      return html; // Return original HTML if processing fails
+    }
+  };
+
   // Global fallback function for any remaining openonlinewindow calls
   useEffect(() => {
     // Define a global fallback function to prevent errors
@@ -560,6 +622,9 @@ function FluentApp() {
 
         // Convert JavaScript openonlinewindow links to proper HTTPS URLs
         overviewHtml = convertOpenOnlineWindowLinks(overviewHtml);
+
+        // Add d-none class to specific columns for mobile hiding
+        overviewHtml = addMobileHidingClasses(overviewHtml);
 
         const divCount = (overviewHtml.match(/<div[^>]*>/gi) || []).length;
         const tableCount = (overviewHtml.match(/<table[^>]*>/gi) || []).length;

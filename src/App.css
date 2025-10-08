@@ -9,6 +9,7 @@
   #root {
     padding: 0.5rem;
   }
+  
 }
 
 .app {
@@ -612,5 +613,12 @@ button:disabled {
   
   .summary p {
     font-size: 0.8rem;
+  }
+}
+
+/* Utility class to hide elements on phone screens */
+@media (max-width: 768px) {
+  .d-none {
+    display: none !important;
   }
 }
