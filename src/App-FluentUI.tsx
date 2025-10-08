@@ -30,6 +30,7 @@ import {
   PeopleTeamFilled,
   SportHockeyRegular,
   PhoneScreenTimeRegular,
+  DismissRegular,
 } from "@fluentui/react-icons";
 
 interface TableExtractionResult {
@@ -187,6 +188,19 @@ const useStyles = makeStyles({
     fontSize: tokens.fontSizeBase300,
     opacity: 0.8,
   },
+  rotationPromptContent: {
+    position: "relative",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dismissButton: {
+    position: "absolute",
+    top: "-20px",
+    right: "-20px",
+    color: tokens.colorNeutralForeground1,
+  },
   navigationContainer: {
     marginBottom: tokens.spacingVerticalXL,
   },
@@ -200,6 +214,7 @@ function FluentApp() {
 
   // Orientation detection states
   const [isPortraitMobile, setIsPortraitMobile] = useState(false);
+  const [showRotationPrompt, setShowRotationPrompt] = useState(true);
 
   // Navigation state
   const [activeTab, setActiveTab] = useState<string>("statistics");
@@ -240,7 +255,14 @@ function FluentApp() {
     const checkOrientation = () => {
       const isMobile = window.innerWidth <= 768; // Mobile breakpoint
       const isPortrait = window.innerHeight > window.innerWidth;
-      setIsPortraitMobile(isMobile && isPortrait);
+      const newIsPortraitMobile = isMobile && isPortrait;
+      
+      // Reset rotation prompt when switching to landscape
+      if (isPortraitMobile && !newIsPortraitMobile) {
+        setShowRotationPrompt(true);
+      }
+      
+      setIsPortraitMobile(newIsPortraitMobile);
     };
 
     // Prevent zoom on orientation change
@@ -559,12 +581,28 @@ function FluentApp() {
   return (
     <FluentProvider theme={webDarkTheme}>
       {/* Rotation Prompt Overlay */}
-      {isPortraitMobile && (
+      {isPortraitMobile && showRotationPrompt && (
         <div className={styles.rotationPrompt}>
-          <PhoneScreenTimeRegular className={styles.phoneIcon} />
-          <div className={styles.rotationText}>Please rotate your device</div>
-          <div className={styles.rotationSubtext}>
-            This app works best in landscape mode
+          <div className={styles.rotationPromptContent}>
+            <Button
+              appearance="subtle"
+              icon={<DismissRegular />}
+              onClick={() => setShowRotationPrompt(false)}
+              className={styles.dismissButton}
+              title="Continue in portrait mode"
+            />
+            <PhoneScreenTimeRegular className={styles.phoneIcon} />
+            <div className={styles.rotationText}>Please rotate your device</div>
+            <div className={styles.rotationSubtext}>
+              This app works best in landscape mode
+            </div>
+            <Button
+              appearance="secondary"
+              onClick={() => setShowRotationPrompt(false)}
+              style={{ marginTop: tokens.spacingVerticalL }}
+            >
+              Continue anyway
+            </Button>
           </div>
         </div>
       )}
