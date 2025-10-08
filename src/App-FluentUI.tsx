@@ -256,12 +256,12 @@ function FluentApp() {
       const isMobile = window.innerWidth <= 768; // Mobile breakpoint
       const isPortrait = window.innerHeight > window.innerWidth;
       const newIsPortraitMobile = isMobile && isPortrait;
-      
+
       // Reset rotation prompt when switching to landscape
       if (isPortraitMobile && !newIsPortraitMobile) {
         setShowRotationPrompt(true);
       }
-      
+
       setIsPortraitMobile(newIsPortraitMobile);
     };
 
