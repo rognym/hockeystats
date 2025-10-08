@@ -120,13 +120,17 @@ const useStyles = makeStyles({
   },
   extractedTable: {
     width: "100%",
+    overflowX: "auto", // Enable horizontal scrolling
+    WebkitOverflowScrolling: "touch", // Enable smooth scrolling on iOS
     "& table": {
       width: "100%",
+      minWidth: "600px", // Ensure table has minimum width for readability
       borderCollapse: "collapse",
       "& th, & td": {
         padding: tokens.spacingVerticalS,
         textAlign: "left",
         borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+        whiteSpace: "nowrap", // Prevent text wrapping to maintain table structure
       },
       "& th": {
         backgroundColor: tokens.colorNeutralBackground2,
@@ -142,6 +146,18 @@ const useStyles = makeStyles({
       },
       "&:visited": {
         color: tokens.colorBrandForeground1,
+      },
+    },
+    // Mobile-specific styling
+    "@media (max-width: 768px)": {
+      // Ensure scrolling container works on mobile
+      touchAction: "pan-x", // Allow horizontal panning
+      "& table": {
+        fontSize: "0.85rem", // Smaller font for mobile
+        minWidth: "500px", // Adjusted minimum width for mobile
+        "& th, & td": {
+          padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalXS}`,
+        },
       },
     },
   },
@@ -730,7 +746,7 @@ function FluentApp() {
                     header={
                       <div
                         style={{
-                          display: "flex",
+                          display: "none",
                           alignItems: "center",
                           gap: tokens.spacingHorizontalXS,
                         }}
@@ -755,7 +771,7 @@ function FluentApp() {
                         </Text>
                       </div>
                     }
-                    description={tableResult.debugInfo}
+                    //description={tableResult.debugInfo}
                   />
                   {tableResult.success && tableResult.tableHtml && (
                     <CardPreview>
@@ -836,7 +852,7 @@ function FluentApp() {
                     header={
                       <div
                         style={{
-                          display: "flex",
+                          display: "none",
                           alignItems: "center",
                           gap: tokens.spacingHorizontalXS,
                         }}
@@ -861,7 +877,7 @@ function FluentApp() {
                         </Text>
                       </div>
                     }
-                    description={overviewResult.debugInfo}
+                    //description={overviewResult.debugInfo}
                   />
                   {overviewResult.success && overviewResult.overviewHtml && (
                     <CardPreview>
