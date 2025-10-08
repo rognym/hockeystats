@@ -16,11 +16,10 @@ import {
   MessageBarBody,
   Field,
   tokens,
-  Accordion,
-  AccordionItem,
-  AccordionHeader,
-  AccordionPanel,
+  TabList,
+  Tab,
 } from "@fluentui/react-components";
+import type { SelectTabData, SelectTabEvent } from "@fluentui/react-components";
 import {
   DatabaseSearchRegular,
   DataBarHorizontalRegular,
@@ -36,6 +35,14 @@ import {
 interface TableExtractionResult {
   url: string;
   tableHtml: string;
+  success: boolean;
+  error?: string;
+  debugInfo?: string;
+}
+
+interface TeamOverviewResult {
+  url: string;
+  overviewHtml: string;
   success: boolean;
   error?: string;
   debugInfo?: string;
@@ -180,6 +187,12 @@ const useStyles = makeStyles({
     fontSize: tokens.fontSizeBase300,
     opacity: 0.8,
   },
+  navigationContainer: {
+    marginBottom: tokens.spacingVerticalXL,
+  },
+  tabContent: {
+    marginTop: tokens.spacingVerticalL,
+  },
 });
 
 function FluentApp() {
@@ -187,6 +200,9 @@ function FluentApp() {
 
   // Orientation detection states
   const [isPortraitMobile, setIsPortraitMobile] = useState(false);
+
+  // Navigation state
+  const [activeTab, setActiveTab] = useState<string>("statistics");
 
   // Pull to refresh states
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -259,6 +275,10 @@ function FluentApp() {
       window.removeEventListener("orientationchange", preventZoom);
     };
   }, []);
+
+  const handleTabSelect = (_event: SelectTabEvent, data: SelectTabData) => {
+    setActiveTab(data.value as string);
+  };
 
   const statisticsOptions = [
     { value: "ScoringLeaders", text: "Point Leaders" },
@@ -577,238 +597,254 @@ function FluentApp() {
           />
         </div>
 
-        {/* Accordion Sections */}
-        <Accordion multiple collapsible>
+        {/* Navigation Tabs */}
+        <div className={styles.navigationContainer}>
+          <TabList
+            selectedValue={activeTab}
+            onTabSelect={handleTabSelect}
+            size="large"
+          >
+            <Tab value="statistics" icon={<PeopleStarFilled />}>
+              Player Statistics
+            </Tab>
+            <Tab value="overview" icon={<PeopleTeamFilled />}>
+              Schedule and Results
+            </Tab>
+          </TabList>
+        </div>
+
+        {/* Tab Content */}
+        <div className={styles.tabContent}>
           {/* Player Statistics Section */}
-          <AccordionItem value="statistics">
-            <AccordionHeader icon={<PeopleStarFilled />}>
-              <Title3>Player Statistics</Title3>
-            </AccordionHeader>
-            <AccordionPanel>
-              <Card className={styles.section}>
-                <div className={styles.controls}>
-                  <div className={styles.formRow}>
-                    <Field label="Category">
-                      <Dropdown
-                        className={styles.dropdown}
-                        value={
-                          statisticsOptions.find(
-                            (opt) => opt.value === statisticsCategory
-                          )?.text
-                        }
-                        onOptionSelect={(_, data) =>
-                          setStatisticsCategory(data.optionValue as string)
-                        }
-                        disabled={isExtractingTable}
-                      >
-                        {statisticsOptions.map((option) => (
-                          <Option key={option.value} value={option.value}>
-                            {option.text}
-                          </Option>
-                        ))}
-                      </Dropdown>
-                    </Field>
-
-                    <Field label="League">
-                      <Dropdown
-                        className={styles.dropdown}
-                        value={
-                          leagueOptions.find((opt) => opt.value === leagueId)
-                            ?.text
-                        }
-                        onOptionSelect={(_, data) =>
-                          setLeagueId(data.optionValue as string)
-                        }
-                        disabled={isExtractingTable}
-                      >
-                        {leagueOptions.map((option) => (
-                          <Option key={option.value} value={option.value}>
-                            {option.text}
-                          </Option>
-                        ))}
-                      </Dropdown>
-                    </Field>
-                  </div>
-
-                  <div className={styles.buttonGroup}>
-                    <Button
-                      appearance="primary"
-                      icon={
-                        isExtractingTable ? (
-                          <Spinner size="tiny" />
-                        ) : (
-                          <DatabaseSearchRegular />
-                        )
+          {activeTab === "statistics" && (
+            <Card className={styles.section}>
+              <CardHeader
+                header={<Title3>Player Statistics</Title3>}
+                description={"Extract player statistics from league pages"}
+              />
+              <div className={styles.controls}>
+                <div className={styles.formRow}>
+                  <Field label="Category">
+                    <Dropdown
+                      className={styles.dropdown}
+                      value={
+                        statisticsOptions.find(
+                          (opt) => opt.value === statisticsCategory
+                        )?.text
                       }
-                      onClick={extractTableContent}
-                      disabled={
-                        isExtractingTable || !leagueId || !statisticsCategory
+                      onOptionSelect={(_, data) =>
+                        setStatisticsCategory(data.optionValue as string)
                       }
+                      disabled={isExtractingTable}
                     >
-                      {isExtractingTable ? "Fetching..." : "Extract Statistics"}
-                    </Button>
-                  </div>
+                      {statisticsOptions.map((option) => (
+                        <Option key={option.value} value={option.value}>
+                          {option.text}
+                        </Option>
+                      ))}
+                    </Dropdown>
+                  </Field>
+
+                  <Field label="League">
+                    <Dropdown
+                      className={styles.dropdown}
+                      value={
+                        leagueOptions.find((opt) => opt.value === leagueId)
+                          ?.text
+                      }
+                      onOptionSelect={(_, data) =>
+                        setLeagueId(data.optionValue as string)
+                      }
+                      disabled={isExtractingTable}
+                    >
+                      {leagueOptions.map((option) => (
+                        <Option key={option.value} value={option.value}>
+                          {option.text}
+                        </Option>
+                      ))}
+                    </Dropdown>
+                  </Field>
                 </div>
 
-                {tableResult && (
-                  <Card className={styles.resultCard}>
-                    <CardHeader
-                      header={
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: tokens.spacingHorizontalXS,
-                          }}
-                        >
-                          {tableResult.success ? (
-                            <CheckmarkCircleRegular
-                              style={{
-                                color: tokens.colorPaletteGreenForeground1,
-                              }}
-                            />
-                          ) : (
-                            <ErrorCircleRegular
-                              style={{
-                                color: tokens.colorPaletteRedForeground1,
-                              }}
-                            />
-                          )}
-                          <Text weight="semibold">
-                            {tableResult.success
-                              ? "Statistics Extracted"
-                              : "Extraction Failed"}
-                          </Text>
-                        </div>
-                      }
-                      description={tableResult.debugInfo}
-                    />
-                    {tableResult.success && tableResult.tableHtml && (
-                      <CardPreview>
-                        <div
-                          className={styles.extractedTable}
-                          dangerouslySetInnerHTML={{
-                            __html: tableResult.tableHtml,
-                          }}
-                        />
-                      </CardPreview>
-                    )}
-                    {!tableResult.success && tableResult.error && (
-                      <MessageBar intent="error">
-                        <MessageBarBody>{tableResult.error}</MessageBarBody>
-                      </MessageBar>
-                    )}
-                  </Card>
-                )}
-              </Card>
-            </AccordionPanel>
-          </AccordionItem>
+                <div className={styles.buttonGroup}>
+                  <Button
+                    appearance="primary"
+                    icon={
+                      isExtractingTable ? (
+                        <Spinner size="tiny" />
+                      ) : (
+                        <DatabaseSearchRegular />
+                      )
+                    }
+                    onClick={extractTableContent}
+                    disabled={
+                      isExtractingTable || !leagueId || !statisticsCategory
+                    }
+                  >
+                    {isExtractingTable ? "Fetching..." : "Extract Statistics"}
+                  </Button>
+                </div>
+              </div>
+
+              {tableResult && (
+                <Card className={styles.resultCard}>
+                  <CardHeader
+                    header={
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: tokens.spacingHorizontalXS,
+                        }}
+                      >
+                        {tableResult.success ? (
+                          <CheckmarkCircleRegular
+                            style={{
+                              color: tokens.colorPaletteGreenForeground1,
+                            }}
+                          />
+                        ) : (
+                          <ErrorCircleRegular
+                            style={{
+                              color: tokens.colorPaletteRedForeground1,
+                            }}
+                          />
+                        )}
+                        <Text weight="semibold">
+                          {tableResult.success
+                            ? "Statistics Extracted"
+                            : "Extraction Failed"}
+                        </Text>
+                      </div>
+                    }
+                    description={tableResult.debugInfo}
+                  />
+                  {tableResult.success && tableResult.tableHtml && (
+                    <CardPreview>
+                      <div
+                        className={styles.extractedTable}
+                        dangerouslySetInnerHTML={{
+                          __html: tableResult.tableHtml,
+                        }}
+                      />
+                    </CardPreview>
+                  )}
+                  {!tableResult.success && tableResult.error && (
+                    <MessageBar intent="error">
+                      <MessageBarBody>{tableResult.error}</MessageBarBody>
+                    </MessageBar>
+                  )}
+                </Card>
+              )}
+            </Card>
+          )}
 
           {/* Team Overview Section */}
-          <AccordionItem value="overview">
-            <AccordionHeader icon={<PeopleTeamFilled />}>
-              <Title3>Schedule and Results</Title3>
-            </AccordionHeader>
-            <AccordionPanel>
-              <Card className={styles.section}>
-                <div className={styles.controls}>
-                  <div className={styles.formRow}>
-                    <Field label="League">
-                      <Dropdown
-                        className={styles.dropdown}
-                        value={
-                          leagueOptions.find(
-                            (opt) => opt.value === overviewLeagueId
-                          )?.text
-                        }
-                        onOptionSelect={(_, data) =>
-                          setOverviewLeagueId(data.optionValue as string)
-                        }
-                        disabled={isExtractingOverview}
-                      >
-                        {leagueOptions.map((option) => (
-                          <Option key={option.value} value={option.value}>
-                            {option.text}
-                          </Option>
-                        ))}
-                      </Dropdown>
-                    </Field>
-                  </div>
-
-                  <div className={styles.buttonGroup}>
-                    <Button
-                      appearance="primary"
-                      icon={
-                        isExtractingOverview ? (
-                          <Spinner size="tiny" />
-                        ) : (
-                          <DataBarHorizontalRegular />
-                        )
+          {activeTab === "overview" && (
+            <Card className={styles.section}>
+              <CardHeader
+                header={<Title3>Schedule and Results</Title3>}
+                description={
+                  "Extract team overview and statistics from league overview pages"
+                }
+              />
+              <div className={styles.controls}>
+                <div className={styles.formRow}>
+                  <Field label="League">
+                    <Dropdown
+                      className={styles.dropdown}
+                      value={
+                        leagueOptions.find(
+                          (opt) => opt.value === overviewLeagueId
+                        )?.text
                       }
-                      onClick={extractTeamOverview}
-                      disabled={isExtractingOverview || !overviewLeagueId}
+                      onOptionSelect={(_, data) =>
+                        setOverviewLeagueId(data.optionValue as string)
+                      }
+                      disabled={isExtractingOverview}
                     >
-                      {isExtractingOverview
-                        ? "Extracting..."
-                        : "Extract Overview"}
-                    </Button>
-                  </div>
+                      {leagueOptions.map((option) => (
+                        <Option key={option.value} value={option.value}>
+                          {option.text}
+                        </Option>
+                      ))}
+                    </Dropdown>
+                  </Field>
                 </div>
 
-                {overviewResult && (
-                  <Card className={styles.resultCard}>
-                    <CardHeader
-                      header={
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: tokens.spacingHorizontalXS,
-                          }}
-                        >
-                          {overviewResult.success ? (
-                            <CheckmarkCircleRegular
-                              style={{
-                                color: tokens.colorPaletteGreenForeground1,
-                              }}
-                            />
-                          ) : (
-                            <ErrorCircleRegular
-                              style={{
-                                color: tokens.colorPaletteRedForeground1,
-                              }}
-                            />
-                          )}
-                          <Text weight="semibold">
-                            {overviewResult.success
-                              ? "Overview Extracted"
-                              : "Extraction Failed"}
-                          </Text>
-                        </div>
-                      }
-                      description={overviewResult.debugInfo}
-                    />
-                    {overviewResult.success && overviewResult.overviewHtml && (
-                      <CardPreview>
-                        <div
-                          className={styles.extractedTable}
-                          dangerouslySetInnerHTML={{
-                            __html: overviewResult.overviewHtml,
-                          }}
-                        />
-                      </CardPreview>
-                    )}
-                    {!overviewResult.success && overviewResult.error && (
-                      <MessageBar intent="error">
-                        <MessageBarBody>{overviewResult.error}</MessageBarBody>
-                      </MessageBar>
-                    )}
-                  </Card>
-                )}
-              </Card>
-            </AccordionPanel>
-          </AccordionItem>
-        </Accordion>
+                <div className={styles.buttonGroup}>
+                  <Button
+                    appearance="primary"
+                    icon={
+                      isExtractingOverview ? (
+                        <Spinner size="tiny" />
+                      ) : (
+                        <DataBarHorizontalRegular />
+                      )
+                    }
+                    onClick={extractTeamOverview}
+                    disabled={isExtractingOverview || !overviewLeagueId}
+                  >
+                    {isExtractingOverview
+                      ? "Extracting..."
+                      : "Extract Overview"}
+                  </Button>
+                </div>
+              </div>
+
+              {overviewResult && (
+                <Card className={styles.resultCard}>
+                  <CardHeader
+                    header={
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: tokens.spacingHorizontalXS,
+                        }}
+                      >
+                        {overviewResult.success ? (
+                          <CheckmarkCircleRegular
+                            style={{
+                              color: tokens.colorPaletteGreenForeground1,
+                            }}
+                          />
+                        ) : (
+                          <ErrorCircleRegular
+                            style={{
+                              color: tokens.colorPaletteRedForeground1,
+                            }}
+                          />
+                        )}
+                        <Text weight="semibold">
+                          {overviewResult.success
+                            ? "Overview Extracted"
+                            : "Extraction Failed"}
+                        </Text>
+                      </div>
+                    }
+                    description={overviewResult.debugInfo}
+                  />
+                  {overviewResult.success && overviewResult.overviewHtml && (
+                    <CardPreview>
+                      <div
+                        className={styles.extractedTable}
+                        dangerouslySetInnerHTML={{
+                          __html: overviewResult.overviewHtml,
+                        }}
+                      />
+                    </CardPreview>
+                  )}
+                  {!overviewResult.success && overviewResult.error && (
+                    <MessageBar intent="error">
+                      <MessageBarBody>{overviewResult.error}</MessageBarBody>
+                    </MessageBar>
+                  )}
+                </Card>
+              )}
+            </Card>
+          )}
+        </div>
       </div>
     </FluentProvider>
   );
