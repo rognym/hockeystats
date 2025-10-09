@@ -226,6 +226,20 @@ const useStyles = makeStyles({
   },
   navigationContainer: {
     marginBottom: tokens.spacingVerticalXL,
+    // Mobile-specific styling for vertical tabs
+    "@media (max-width: 768px)": {
+      "& [role='tablist']": {
+        flexDirection: "column",
+        alignItems: "stretch",
+        gap: tokens.spacingVerticalXS,
+      },
+      "& [role='tab']": {
+        justifyContent: "flex-start",
+        width: "100%",
+        textAlign: "left",
+        padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalL}`,
+      },
+    },
   },
   tabContent: {
     marginTop: tokens.spacingVerticalL,
@@ -260,6 +274,12 @@ function FluentApp() {
   const [overviewResult, setOverviewResult] =
     useState<TeamOverviewResult | null>(null);
   const [isExtractingOverview, setIsExtractingOverview] = useState(false);
+
+  // Standings extraction states
+  const [standingsLeagueId, setStandingsLeagueId] = useState("19041");
+  const [standingsResult, setStandingsResult] =
+    useState<TeamOverviewResult | null>(null);
+  const [isExtractingStandings, setIsExtractingStandings] = useState(false);
 
   // League options
   const leagueOptions = [
@@ -667,6 +687,121 @@ function FluentApp() {
     setIsExtractingOverview(false);
   };
 
+  const extractStandings = async () => {
+    if (isExtractingStandings) return;
+    setIsExtractingStandings(true);
+    setStandingsResult(null);
+    setTableResult(null);
+    setOverviewResult(null);
+
+    const standingsUrl = `https://stats.swehockey.se/ScheduleAndResults/Standings/${standingsLeagueId}`;
+
+    try {
+      const response = await fetch(standingsUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch standings page: ${response.status}`);
+      }
+
+      const html = await response.text();
+      let standingsHtml = "";
+
+      // Find the TSMstats container-fluid div
+      const tsmStartMatch = html.match(
+        /<div[^>]*class[^>]*=["'][^"']*TSMstats[^"']*container-fluid[^"']*["'][^>]*>/i
+      );
+
+      if (tsmStartMatch) {
+        const startIndex = html.indexOf(tsmStartMatch[0]);
+        let divCount = 1;
+        let endIndex = startIndex + tsmStartMatch[0].length;
+
+        while (endIndex < html.length && divCount > 0) {
+          const nextDiv = html.indexOf("<div", endIndex);
+          const nextCloseDiv = html.indexOf("</div>", endIndex);
+
+          if (nextCloseDiv === -1) break;
+
+          if (nextDiv !== -1 && nextDiv < nextCloseDiv) {
+            divCount++;
+            endIndex = nextDiv + 4;
+          } else {
+            divCount--;
+            endIndex = nextCloseDiv + 6;
+          }
+        }
+
+        if (divCount === 0) {
+          const containerHtml = html.substring(startIndex, endIndex);
+
+          // Special handling for league ID 18986 - extract first 2 tables
+          if (standingsLeagueId === "18986") {
+            const allTableMatches = containerHtml.match(
+              /<table[^>]*class[^>]*=["'][^"']*tblBorderNoPad[^"']*["'][^>]*>[\s\S]*?<\/table>/gi
+            );
+
+            if (allTableMatches && allTableMatches.length >= 2) {
+              standingsHtml = allTableMatches[0] + allTableMatches[1];
+            } else if (allTableMatches && allTableMatches.length === 1) {
+              standingsHtml = allTableMatches[0];
+            }
+          } else {
+            // Default behavior - find the first table with class "tblBorderNoPad"
+            const tableMatch = containerHtml.match(
+              /<table[^>]*class[^>]*=["'][^"']*tblBorderNoPad[^"']*["'][^>]*>[\s\S]*?<\/table>/i
+            );
+
+            if (tableMatch) {
+              standingsHtml = tableMatch[0];
+            }
+          }
+        }
+      }
+
+      if (standingsHtml) {
+        standingsHtml = standingsHtml.trim();
+
+        // Convert JavaScript openonlinewindow links to proper HTTPS URLs
+        standingsHtml = convertOpenOnlineWindowLinks(standingsHtml);
+
+        // Add d-none class to specific columns for mobile hiding
+        standingsHtml = addMobileHidingClasses(standingsHtml);
+
+        const rowCount = (standingsHtml.match(/<tr[\s\S]*?<\/tr>/gi) || [])
+          .length;
+        const cellCount = (standingsHtml.match(/<td[\s\S]*?<\/td>/gi) || [])
+          .length;
+        const tableCount = (standingsHtml.match(/<table[^>]*>/gi) || []).length;
+
+        setStandingsResult({
+          url: standingsUrl,
+          overviewHtml: standingsHtml,
+          success: true,
+          debugInfo: `Standings extracted: ${tableCount} table(s), ${rowCount} rows, ${cellCount} cells`,
+        });
+      } else {
+        const hasTSMstats = html.includes("TSMstats");
+        const hasContainerFluid = html.includes("container-fluid");
+        const hasTblBorderNoPad = html.includes("tblBorderNoPad");
+
+        setStandingsResult({
+          url: standingsUrl,
+          overviewHtml: "",
+          success: false,
+          error: `No standings table found. TSMstats: ${hasTSMstats}, container-fluid: ${hasContainerFluid}, tblBorderNoPad: ${hasTblBorderNoPad}`,
+        });
+      }
+    } catch (error) {
+      setStandingsResult({
+        url: standingsUrl,
+        overviewHtml: "",
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+
+    setIsExtractingStandings(false);
+  };
+
   return (
     <FluentProvider theme={webDarkTheme}>
       {/* Rotation Prompt Overlay */}
@@ -736,6 +871,9 @@ function FluentApp() {
             </Tab>
             <Tab value="overview" icon={<PeopleTeamFilled />}>
               Schedule & Results
+            </Tab>
+            <Tab value="standings" icon={<DataBarHorizontalRegular />}>
+              Standings
             </Tab>
           </TabList>
         </div>
@@ -871,7 +1009,7 @@ function FluentApp() {
           {activeTab === "overview" && (
             <Card className={styles.section}>
               <CardHeader
-                header={<Title3>Schedule and Results</Title3>}
+                header={<Title3>Schedule & Results</Title3>}
                 description={
                   "Extract team overview and statistics from league overview pages"
                 }
@@ -966,6 +1104,110 @@ function FluentApp() {
                   {!overviewResult.success && overviewResult.error && (
                     <MessageBar intent="error">
                       <MessageBarBody>{overviewResult.error}</MessageBarBody>
+                    </MessageBar>
+                  )}
+                </Card>
+              )}
+            </Card>
+          )}
+
+          {/* Standings Section */}
+          {activeTab === "standings" && (
+            <Card className={styles.section}>
+              <CardHeader
+                header={<Title3>Standings</Title3>}
+                description={"Extract league standings from standings pages"}
+              />
+              <div className={styles.controls}>
+                <div className={styles.formRow}>
+                  <Field label="League">
+                    <Dropdown
+                      className={styles.dropdown}
+                      value={
+                        leagueOptions.find(
+                          (opt) => opt.value === standingsLeagueId
+                        )?.text
+                      }
+                      onOptionSelect={(_, data) =>
+                        setStandingsLeagueId(data.optionValue as string)
+                      }
+                      disabled={isExtractingStandings}
+                    >
+                      {leagueOptions.map((option) => (
+                        <Option key={option.value} value={option.value}>
+                          {option.text}
+                        </Option>
+                      ))}
+                    </Dropdown>
+                  </Field>
+                </div>
+
+                <div className={styles.buttonGroup}>
+                  <Button
+                    appearance="primary"
+                    icon={
+                      isExtractingStandings ? (
+                        <Spinner size="tiny" />
+                      ) : (
+                        <DataBarHorizontalRegular />
+                      )
+                    }
+                    onClick={extractStandings}
+                    disabled={isExtractingStandings || !standingsLeagueId}
+                  >
+                    {isExtractingStandings
+                      ? "Extracting..."
+                      : "Extract Standings"}
+                  </Button>
+                </div>
+              </div>
+
+              {standingsResult && (
+                <Card className={styles.resultCard}>
+                  <CardHeader
+                    header={
+                      <div
+                        style={{
+                          display: "none",
+                          alignItems: "center",
+                          gap: tokens.spacingHorizontalXS,
+                        }}
+                      >
+                        {standingsResult.success ? (
+                          <CheckmarkCircleRegular
+                            style={{
+                              color: tokens.colorPaletteGreenForeground1,
+                            }}
+                          />
+                        ) : (
+                          <ErrorCircleRegular
+                            style={{
+                              color: tokens.colorPaletteRedForeground1,
+                            }}
+                          />
+                        )}
+                        <Text weight="semibold">
+                          {standingsResult.success
+                            ? "Standings Extracted"
+                            : "Extraction Failed"}
+                        </Text>
+                      </div>
+                    }
+                    //description={standingsResult.debugInfo}
+                  />
+                  {standingsResult.success && standingsResult.overviewHtml && (
+                    <CardPreview>
+                      <div
+                        className={styles.extractedTable}
+                        dangerouslySetInnerHTML={{
+                          __html: standingsResult.overviewHtml,
+                        }}
+                      />
+                    </CardPreview>
+                  )}
+                  {!standingsResult.success && standingsResult.error && (
+                    <MessageBar intent="error">
+                      <MessageBarBody>{standingsResult.error}</MessageBarBody>
                     </MessageBar>
                   )}
                 </Card>
