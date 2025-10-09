@@ -248,8 +248,8 @@ function FluentApp() {
 
   // Table extraction states
   const [statisticsCategory, setStatisticsCategory] =
-    useState("GoalScoringLeaders");
-  const [leagueId, setLeagueId] = useState("18510");
+    useState("ScoringLeaders");
+  const [leagueId, setLeagueId] = useState("18757");
   const [tableResult, setTableResult] = useState<TableExtractionResult | null>(
     null
   );
@@ -263,15 +263,14 @@ function FluentApp() {
 
   // League options
   const leagueOptions = [
-    { value: "18510", text: "Träningsmatcher U13" },
-    { value: "19041", text: "U13P div. 1 höst" },
-    { value: "18757", text: "U13P div. 2A höst" },
-    { value: "18756", text: "U13P div. 2B höst" },
+    { value: "19041", text: "U13P Division 1 Höst" },
+    { value: "18757", text: "U13P Division 2A Höst" },
+    { value: "18756", text: "U13P Division 2B Höst" },
     { value: "18986", text: "U13P DM" },
-    { value: "19034", text: "U14P div. 1 höst" },
-    { value: "19037", text: "U14P div. 2A Höst" },
-    { value: "19039", text: "U14P div. 2B Höst" },
-    { value: "18971", text: "test" },
+    { value: "18510", text: "Träningsmatcher U13" },
+    { value: "19034", text: "U14P Division 1 Höst" },
+    { value: "19037", text: "U14P Division 2A Höst" },
+    { value: "19039", text: "U14P Division 2B Höst" },
   ];
 
   // Orientation detection effect
@@ -779,6 +778,7 @@ function FluentApp() {
                         leagueOptions.find((opt) => opt.value === leagueId)
                           ?.text
                       }
+                      selectedOptions={[leagueId]} // <-- This sets the initially selected option
                       onOptionSelect={(_, data) =>
                         setLeagueId(data.optionValue as string)
                       }
