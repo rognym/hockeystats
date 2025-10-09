@@ -71,6 +71,70 @@ const useStyles = makeStyles({
     paddingBottom: `max(${tokens.spacingVerticalM}, env(safe-area-inset-bottom))`,
     paddingLeft: `max(${tokens.spacingHorizontalM}, env(safe-area-inset-left))`,
     paddingRight: `max(${tokens.spacingHorizontalM}, env(safe-area-inset-right))`,
+    // Override Fluent UI CSS custom properties
+    "--colorBrandBackgroundHover": "#a60000",
+    "--colorBrandBackground": "#a60000",
+    "--colorBrandForeground1": "#a60000",
+    "--colorBrandForeground2": "#8a0000",
+    "--colorCompoundBrandStroke": "#8a0000",
+    "--colorCompoundBrandStrokeHover": "#8a0000",
+    // Global button styling for all buttons
+    "& button": {
+      "&[data-appearance='primary']": {
+        backgroundColor: "#a60000 !important",
+        border: "1px solid #a60000 !important",
+        "&:hover": {
+          backgroundColor: "#8a0000 !important",
+          border: "1px solid #8a0000 !important",
+        },
+        "&:active": {
+          backgroundColor: "#700000 !important",
+          border: "1px solid #700000 !important",
+        },
+        "&:focus": {
+          backgroundColor: "#a60000 !important",
+          border: "1px solid #a60000 !important",
+        },
+        "&:disabled": {
+          backgroundColor: "#555555 !important",
+          border: "1px solid #555555 !important",
+          opacity: 0.6,
+        },
+      },
+      "&[data-appearance='secondary']": {
+        backgroundColor: "transparent !important",
+        border: "1px solid #a60000 !important",
+        color: "#a60000 !important",
+        "&:hover": {
+          backgroundColor: "#a60000 !important",
+          color: "white !important",
+        },
+        "&:active": {
+          backgroundColor: "#700000 !important",
+          border: "1px solid #700000 !important",
+          color: "white !important",
+        },
+        "&:focus": {
+          backgroundColor: "transparent !important",
+          border: "1px solid #a60000 !important",
+          color: "#a60000 !important",
+        },
+      },
+      "&[data-appearance='subtle']": {
+        backgroundColor: "transparent !important",
+        border: "none !important",
+        color: "#a60000 !important",
+        "&:hover": {
+          backgroundColor: "rgba(166, 0, 0, 0.1) !important",
+        },
+        "&:active": {
+          backgroundColor: "rgba(166, 0, 0, 0.2) !important",
+        },
+        "&:focus": {
+          backgroundColor: "transparent !important",
+        },
+      },
+    },
   },
   section: {
     marginBottom: tokens.spacingVerticalXXL,
@@ -141,14 +205,14 @@ const useStyles = makeStyles({
       },
     },
     "& a": {
-      color: tokens.colorBrandForeground1,
+      color: "#a60000",
       textDecoration: "none",
       "&:hover": {
         textDecoration: "underline",
-        color: tokens.colorBrandForeground2,
+        color: "#a60000",
       },
       "&:visited": {
-        color: tokens.colorBrandForeground1,
+        color: "#a60000",
       },
     },
     // Mobile-specific styling
@@ -226,6 +290,34 @@ const useStyles = makeStyles({
   },
   navigationContainer: {
     marginBottom: tokens.spacingVerticalXL,
+    // Custom tab colors
+    "& [role='tablist']": {
+      "& [role='tab']": {
+        color: "#a60000",
+        "& svg": {
+          color: "#a60000",
+        },
+      },
+      "& [role='tab'][aria-selected='true']": {
+        color: "#a60000",
+        borderBottomColor: "#a60000",
+        "& svg": {
+          color: "#a60000",
+        },
+      },
+      "& [role='tab']:hover": {
+        color: "#a60000",
+        "& svg": {
+          color: "#a60000",
+        },
+      },
+      "& [role='tab']:focus": {
+        color: "#a60000",
+        "& svg": {
+          color: "#a60000",
+        },
+      },
+    },
     // Mobile-specific styling for vertical tabs
     "@media (max-width: 768px)": {
       "& [role='tablist']": {
@@ -853,7 +945,7 @@ function FluentApp() {
         >
           <SportHockeyRegular
             style={{
-              fontSize: "48px",
+              fontSize: "24px",
               color: "#a20000ff", // Replace with any valid CSS color or Fluent token
             }}
           />
