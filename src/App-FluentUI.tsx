@@ -177,12 +177,6 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorNeutralBackground1,
     borderRadius: tokens.borderRadiusMedium,
   },
-  refreshButton: {
-    position: "fixed",
-    top: `max(${tokens.spacingVerticalM}, env(safe-area-inset-top))`,
-    right: `max(${tokens.spacingHorizontalM}, env(safe-area-inset-right))`,
-    zIndex: 1000,
-  },
   extractedTable: {
     width: "100%",
     overflowX: "auto", // Enable horizontal scrolling
@@ -337,6 +331,29 @@ const useStyles = makeStyles({
     marginTop: tokens.spacingVerticalL,
     touchAction: "auto", // Allow default touch behavior for child elements
   },
+  pullToRefresh: {
+    position: "fixed",
+    top: `max(${tokens.spacingVerticalM}, env(safe-area-inset-top))`,
+    left: "50%",
+    zIndex: 1001,
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+    backgroundColor: "rgba(166, 0, 0, 0.9)",
+    color: "white",
+    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
+    borderRadius: tokens.borderRadiusLarge,
+    transition: "all 0.3s ease",
+    opacity: 0,
+    transform: "translateX(-50%) translateY(-100%)",
+    "&.visible": {
+      opacity: 1,
+      transform: "translateX(-50%) translateY(0)",
+    },
+    "&.pulling": {
+      backgroundColor: "rgba(166, 0, 0, 0.7)",
+    },
+  },
 });
 
 function FluentApp() {
@@ -351,6 +368,9 @@ function FluentApp() {
 
   // Pull to refresh states
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [startY, setStartY] = useState(0);
+  const [isPulling, setIsPulling] = useState(false);
 
   // Table extraction states
   const [statisticsCategory, setStatisticsCategory] =
@@ -433,6 +453,50 @@ function FluentApp() {
       window.removeEventListener("orientationchange", preventZoom);
     };
   }, []);
+
+  // Pull to refresh effect
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      if (window.scrollY === 0) {
+        setStartY(e.touches[0].clientY);
+        setIsPulling(false);
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (window.scrollY === 0 && !isRefreshing) {
+        const currentY = e.touches[0].clientY;
+        const distance = currentY - startY;
+
+        if (distance > 0) {
+          e.preventDefault();
+          setPullDistance(Math.min(distance, 100));
+          setIsPulling(distance > 50);
+        }
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (isPulling && !isRefreshing) {
+        handleRefresh();
+      }
+      setPullDistance(0);
+      setIsPulling(false);
+      setStartY(0);
+    };
+
+    document.addEventListener("touchstart", handleTouchStart, {
+      passive: false,
+    });
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
+    document.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [startY, isPulling, isRefreshing]);
 
   const handleTabSelect = (_event: SelectTabEvent, data: SelectTabData) => {
     setActiveTab(data.value as string);
@@ -924,17 +988,37 @@ function FluentApp() {
       )}
 
       <div className={styles.app}>
-        {/* Theme Toggle and Refresh Button */}
-        <div className={styles.refreshButton}>
-          <Button
-            appearance="primary"
-            icon={<ArrowSyncRegular />}
-            onClick={handleRefresh}
-            disabled={isRefreshing}
+        {/* Pull to Refresh Indicator */}
+        {(pullDistance > 0 || isRefreshing) && (
+          <div
+            className={`${styles.pullToRefresh} ${
+              pullDistance > 50 || isRefreshing ? "visible" : ""
+            } ${isPulling ? "pulling" : ""}`}
+            style={{
+              transform: `translateX(-50%) translateY(${Math.min(
+                pullDistance - 50,
+                0
+              )}px)`,
+            }}
           >
-            {isRefreshing ? "Refreshing..." : "Refresh"}
-          </Button>
-        </div>
+            {isRefreshing ? (
+              <>
+                <Spinner size="tiny" />
+                <span>Refreshing...</span>
+              </>
+            ) : isPulling ? (
+              <>
+                <ArrowSyncRegular />
+                <span>Release to refresh</span>
+              </>
+            ) : (
+              <>
+                <ArrowSyncRegular />
+                <span>Pull to refresh</span>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Header */}
         <div
