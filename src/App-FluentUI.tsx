@@ -65,7 +65,7 @@ const useStyles = makeStyles({
     minHeight: "100vh",
     "-webkit-text-size-adjust": "100%",
     "-ms-text-size-adjust": "100%",
-    "touch-action": "manipulation",
+    "touch-action": "pan-x pan-y pinch-zoom", // Allow all necessary touch interactions
     /* Safe area insets for iPhone notch/camera */
     paddingTop: `max(${tokens.spacingVerticalM}, env(safe-area-inset-top))`,
     paddingBottom: `max(${tokens.spacingVerticalM}, env(safe-area-inset-bottom))`,
@@ -74,6 +74,7 @@ const useStyles = makeStyles({
   },
   section: {
     marginBottom: tokens.spacingVerticalXXL,
+    touchAction: "auto", // Allow default touch behavior for child elements
   },
   controls: {
     display: "flex",
@@ -122,6 +123,8 @@ const useStyles = makeStyles({
     width: "100%",
     overflowX: "auto", // Enable horizontal scrolling
     WebkitOverflowScrolling: "touch", // Enable smooth scrolling on iOS
+    scrollbarWidth: "thin", // Firefox scrollbar styling
+    scrollBehavior: "smooth", // Smooth scrolling behavior
     "& table": {
       width: "100%",
       minWidth: "600px", // Ensure table has minimum width for readability
@@ -150,8 +153,12 @@ const useStyles = makeStyles({
     },
     // Mobile-specific styling
     "@media (max-width: 768px)": {
-      // Ensure scrolling container works on mobile
-      touchAction: "pan-x", // Allow horizontal panning
+      // Better touch scrolling support
+      touchAction: "pan-x pan-y", // Allow both horizontal and vertical panning
+      WebkitOverflowScrolling: "touch", // Ensure iOS momentum scrolling
+      overflowScrolling: "touch", // Standard property
+      transform: "translateZ(0)", // Force hardware acceleration
+      willChange: "scroll-position", // Optimize for scrolling
       "& table": {
         fontSize: "0.85rem", // Smaller font for mobile
         minWidth: "500px", // Adjusted minimum width for mobile
@@ -222,6 +229,7 @@ const useStyles = makeStyles({
   },
   tabContent: {
     marginTop: tokens.spacingVerticalL,
+    touchAction: "auto", // Allow default touch behavior for child elements
   },
 });
 

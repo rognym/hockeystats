@@ -1,5 +1,7 @@
 # Swedish Hockey Stats URL Tester# React + TypeScript + Vite
 
+npm run dev
+
 A React TypeScript web application for testing URLs from the Swedish Hockey Stats website to find valid game event pages.This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 ## OverviewCurrently, two official plugins are available:
