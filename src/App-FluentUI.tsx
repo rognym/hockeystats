@@ -735,7 +735,7 @@ function FluentApp() {
               Player Statistics
             </Tab>
             <Tab value="overview" icon={<PeopleTeamFilled />}>
-              Schedule and Results
+              Schedule & Results
             </Tab>
           </TabList>
         </div>
