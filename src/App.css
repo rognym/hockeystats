@@ -622,3 +622,350 @@ button:disabled {
     display: none !important;
   }
 }
+
+/* Fluent UI App Styles */
+.fluent-app {
+  /*padding: 16px;*/
+  width: 100%;
+  margin: 0;
+  min-height: 100vh;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  touch-action: pan-x pan-y pinch-zoom;
+  /* Safe area insets for iPhone notch/camera */
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  /* Override Fluent UI CSS custom properties */
+  --colorBrandBackgroundHover: #a60000;
+  --colorBrandBackground: #a60000;
+  --colorBrandForeground1: #a60000;
+  --colorBrandForeground2: #8a0000;
+  --colorCompoundBrandStroke: #8a0000;
+  --colorCompoundBrandStrokeHover: #8a0000;
+}
+
+/* Global button styling for all buttons */
+.fluent-app button[data-appearance='primary'] {
+  background-color: #a60000 !important;
+  border: 1px solid #a60000 !important;
+}
+
+.fluent-app button[data-appearance='primary']:hover {
+  background-color: #8a0000 !important;
+  border: 1px solid #8a0000 !important;
+}
+
+.fluent-app button[data-appearance='primary']:active {
+  background-color: #700000 !important;
+  border: 1px solid #700000 !important;
+}
+
+.fluent-app button[data-appearance='primary']:focus {
+  background-color: #a60000 !important;
+  border: 1px solid #a60000 !important;
+}
+
+.fluent-app button[data-appearance='primary']:disabled {
+  background-color: #555555 !important;
+  border: 1px solid #555555 !important;
+  opacity: 0.6;
+}
+
+.fluent-app button[data-appearance='secondary'] {
+  background-color: transparent !important;
+  border: 1px solid #a60000 !important;
+  color: #a60000 !important;
+}
+
+.fluent-app button[data-appearance='secondary']:hover {
+  background-color: #a60000 !important;
+  color: white !important;
+}
+
+.fluent-app button[data-appearance='secondary']:active {
+  background-color: #700000 !important;
+  border: 1px solid #700000 !important;
+  color: white !important;
+}
+
+.fluent-app button[data-appearance='secondary']:focus {
+  background-color: transparent !important;
+  border: 1px solid #a60000 !important;
+  color: #a60000 !important;
+}
+
+.fluent-app button[data-appearance='subtle'] {
+  background-color: transparent !important;
+  border: none !important;
+  color: #a60000 !important;
+}
+
+.fluent-app button[data-appearance='subtle']:hover {
+  background-color: rgba(166, 0, 0, 0.1) !important;
+}
+
+.fluent-app button[data-appearance='subtle']:active {
+  background-color: rgba(166, 0, 0, 0.2) !important;
+}
+
+.fluent-app button[data-appearance='subtle']:focus {
+  background-color: transparent !important;
+}
+
+.fluent-section {
+  margin-bottom: 48px;
+  touch-action: auto;
+}
+
+.fluent-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+}
+
+.fluent-form-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: end;
+}
+
+.fluent-dropdown {
+  min-width: 200px;
+  flex: 1;
+}
+
+.fluent-button-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.fluent-result-card {
+  margin-top: 16px;
+}
+
+.fluent-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.fluent-result-item {
+  padding: 8px;
+  border-left: 4px solid var(--colorBrandBackground);
+  background-color: #242424;
+  border-radius: 6px;
+}
+
+.fluent-extracted-table {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+}
+
+.fluent-extracted-table table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+}
+
+.fluent-extracted-table th,
+.fluent-extracted-table td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 0px solid #e0e0e0;
+  white-space: nowrap;
+}
+
+.fluent-extracted-table th {
+  background-color: #242424;
+  font-weight: 600;
+}
+
+.fluent-extracted-table a {
+  color: #a60000;
+  text-decoration: none;
+}
+
+.fluent-extracted-table a:hover {
+  text-decoration: underline;
+  color: #a60000;
+}
+
+.fluent-extracted-table a:visited {
+  color: #a60000;
+}
+
+/* Mobile-specific styling */
+@media (max-width: 768px) {
+  .fluent-extracted-table {
+    touch-action: pan-x pan-y;
+    -webkit-overflow-scrolling: touch;
+    transform: translateZ(0);
+    will-change: scroll-position;
+  }
+  
+  .fluent-extracted-table table {
+    font-size: 0.85rem;
+    min-width: 500px;
+  }
+  
+  .fluent-extracted-table th,
+  .fluent-extracted-table td {
+    padding: 4px 8px;
+  }
+}
+
+.fluent-rotation-prompt {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-align: center;
+  padding: 24px;
+  /* Safe area insets for rotation prompt */
+  padding-top: max(24px, env(safe-area-inset-top));
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+  padding-left: max(24px, env(safe-area-inset-left));
+  padding-right: max(24px, env(safe-area-inset-right));
+}
+
+.fluent-phone-icon {
+  font-size: 80px;
+  margin-bottom: 24px;
+  animation: rotatePhone 2s infinite ease-in-out;
+}
+
+@keyframes rotatePhone {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-15deg); }
+  75% { transform: rotate(15deg); }
+  100% { transform: rotate(90deg); }
+}
+
+.fluent-rotation-text {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.fluent-rotation-subtext {
+  font-size: 16px;
+  opacity: 0.8;
+}
+
+.fluent-rotation-prompt-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.fluent-dismiss-button {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  color: white;
+}
+
+.fluent-navigation-container {
+  margin-bottom: 24px;
+}
+
+/* Custom tab colors */
+.fluent-navigation-container [role='tablist'] [role='tab'] {
+  color: #a60000;
+}
+
+.fluent-navigation-container [role='tablist'] [role='tab'] svg {
+  color: #a60000;
+}
+
+.fluent-navigation-container [role='tablist'] [role='tab'][aria-selected='true'] {
+  color: #a60000;
+  border-bottom-color: #a60000;
+}
+
+.fluent-navigation-container [role='tablist'] [role='tab'][aria-selected='true'] svg {
+  color: #a60000;
+}
+
+.fluent-navigation-container [role='tablist'] [role='tab']:hover {
+  color: #a60000;
+}
+
+.fluent-navigation-container [role='tablist'] [role='tab']:hover svg {
+  color: #a60000;
+}
+
+.fluent-navigation-container [role='tablist'] [role='tab']:focus {
+  color: #a60000;
+}
+
+.fluent-navigation-container [role='tablist'] [role='tab']:focus svg {
+  color: #a60000;
+}
+
+/* Mobile-specific styling for vertical tabs */
+@media (max-width: 768px) {
+  .fluent-navigation-container [role='tablist'] {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  
+  .fluent-navigation-container [role='tab'] {
+    justify-content: flex-start;
+    width: 100%;
+    text-align: left;
+    padding: 16px 20px;
+  }
+}
+
+.fluent-tab-content {
+  margin-top: 20px;
+  touch-action: auto;
+}
+
+.fluent-pull-to-refresh {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  left: 50%;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(166, 0, 0, 0.9);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateX(-50%) translateY(-100%);
+}
+
+.fluent-pull-to-refresh.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.fluent-pull-to-refresh.pulling {
+  background-color: rgba(166, 0, 0, 0.7);
+}

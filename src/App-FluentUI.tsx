@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import {
   FluentProvider,
   webDarkTheme,
-  makeStyles,
   Button,
   Dropdown,
   Option,
@@ -32,332 +31,37 @@ import {
   PhoneScreenTimeRegular,
   DismissRegular,
 } from "@fluentui/react-icons";
-
-interface TableExtractionResult {
-  url: string;
-  tableHtml: string;
-  success: boolean;
-  error?: string;
-  debugInfo?: string;
-}
-
-interface TeamOverviewResult {
-  url: string;
-  overviewHtml: string;
-  success: boolean;
-  error?: string;
-  debugInfo?: string;
-}
-
-interface TeamOverviewResult {
-  url: string;
-  overviewHtml: string;
-  success: boolean;
-  error?: string;
-  debugInfo?: string;
-}
-
-const useStyles = makeStyles({
-  app: {
-    padding: tokens.spacingHorizontalM,
-    width: "100%",
-    margin: "0",
-    minHeight: "100vh",
-    "-webkit-text-size-adjust": "100%",
-    "-ms-text-size-adjust": "100%",
-    "touch-action": "pan-x pan-y pinch-zoom", // Allow all necessary touch interactions
-    /* Safe area insets for iPhone notch/camera */
-    paddingTop: `max(${tokens.spacingVerticalM}, env(safe-area-inset-top))`,
-    paddingBottom: `max(${tokens.spacingVerticalM}, env(safe-area-inset-bottom))`,
-    paddingLeft: `max(${tokens.spacingHorizontalM}, env(safe-area-inset-left))`,
-    paddingRight: `max(${tokens.spacingHorizontalM}, env(safe-area-inset-right))`,
-    // Override Fluent UI CSS custom properties
-    "--colorBrandBackgroundHover": "#a60000",
-    "--colorBrandBackground": "#a60000",
-    "--colorBrandForeground1": "#a60000",
-    "--colorBrandForeground2": "#8a0000",
-    "--colorCompoundBrandStroke": "#8a0000",
-    "--colorCompoundBrandStrokeHover": "#8a0000",
-    // Global button styling for all buttons
-    "& button": {
-      "&[data-appearance='primary']": {
-        backgroundColor: "#a60000 !important",
-        border: "1px solid #a60000 !important",
-        "&:hover": {
-          backgroundColor: "#8a0000 !important",
-          border: "1px solid #8a0000 !important",
-        },
-        "&:active": {
-          backgroundColor: "#700000 !important",
-          border: "1px solid #700000 !important",
-        },
-        "&:focus": {
-          backgroundColor: "#a60000 !important",
-          border: "1px solid #a60000 !important",
-        },
-        "&:disabled": {
-          backgroundColor: "#555555 !important",
-          border: "1px solid #555555 !important",
-          opacity: 0.6,
-        },
-      },
-      "&[data-appearance='secondary']": {
-        backgroundColor: "transparent !important",
-        border: "1px solid #a60000 !important",
-        color: "#a60000 !important",
-        "&:hover": {
-          backgroundColor: "#a60000 !important",
-          color: "white !important",
-        },
-        "&:active": {
-          backgroundColor: "#700000 !important",
-          border: "1px solid #700000 !important",
-          color: "white !important",
-        },
-        "&:focus": {
-          backgroundColor: "transparent !important",
-          border: "1px solid #a60000 !important",
-          color: "#a60000 !important",
-        },
-      },
-      "&[data-appearance='subtle']": {
-        backgroundColor: "transparent !important",
-        border: "none !important",
-        color: "#a60000 !important",
-        "&:hover": {
-          backgroundColor: "rgba(166, 0, 0, 0.1) !important",
-        },
-        "&:active": {
-          backgroundColor: "rgba(166, 0, 0, 0.2) !important",
-        },
-        "&:focus": {
-          backgroundColor: "transparent !important",
-        },
-      },
-    },
-  },
-  section: {
-    marginBottom: tokens.spacingVerticalXXL,
-    touchAction: "auto", // Allow default touch behavior for child elements
-  },
-  controls: {
-    display: "flex",
-    flexDirection: "column",
-    gap: tokens.spacingVerticalM,
-    padding: tokens.spacingHorizontalL,
-  },
-  formRow: {
-    display: "flex",
-    gap: tokens.spacingHorizontalM,
-    flexWrap: "wrap",
-    alignItems: "end",
-  },
-  dropdown: {
-    minWidth: "200px",
-    flex: 1,
-  },
-  buttonGroup: {
-    display: "flex",
-    gap: tokens.spacingHorizontalS,
-    marginTop: tokens.spacingVerticalM,
-  },
-  resultCard: {
-    marginTop: tokens.spacingVerticalM,
-  },
-  resultsList: {
-    display: "flex",
-    flexDirection: "column",
-    gap: tokens.spacingVerticalS,
-    maxHeight: "400px",
-    overflowY: "auto",
-  },
-  resultItem: {
-    padding: tokens.spacingVerticalS,
-    borderLeft: `4px solid ${tokens.colorBrandBackground}`,
-    backgroundColor: tokens.colorNeutralBackground1,
-    borderRadius: tokens.borderRadiusMedium,
-  },
-  extractedTable: {
-    width: "100%",
-    overflowX: "auto", // Enable horizontal scrolling
-    WebkitOverflowScrolling: "touch", // Enable smooth scrolling on iOS
-    scrollbarWidth: "thin", // Firefox scrollbar styling
-    scrollBehavior: "smooth", // Smooth scrolling behavior
-    "& table": {
-      width: "100%",
-      minWidth: "600px", // Ensure table has minimum width for readability
-      borderCollapse: "collapse",
-      "& th, & td": {
-        padding: tokens.spacingVerticalS,
-        textAlign: "left",
-        borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-        whiteSpace: "nowrap", // Prevent text wrapping to maintain table structure
-      },
-      "& th": {
-        backgroundColor: tokens.colorNeutralBackground2,
-        fontWeight: tokens.fontWeightSemibold,
-      },
-    },
-    "& a": {
-      color: "#a60000",
-      textDecoration: "none",
-      "&:hover": {
-        textDecoration: "underline",
-        color: "#a60000",
-      },
-      "&:visited": {
-        color: "#a60000",
-      },
-    },
-    // Mobile-specific styling
-    "@media (max-width: 768px)": {
-      // Better touch scrolling support
-      touchAction: "pan-x pan-y", // Allow both horizontal and vertical panning
-      WebkitOverflowScrolling: "touch", // Ensure iOS momentum scrolling
-      overflowScrolling: "touch", // Standard property
-      transform: "translateZ(0)", // Force hardware acceleration
-      willChange: "scroll-position", // Optimize for scrolling
-      "& table": {
-        fontSize: "0.85rem", // Smaller font for mobile
-        minWidth: "500px", // Adjusted minimum width for mobile
-        "& th, & td": {
-          padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalXS}`,
-        },
-      },
-    },
-  },
-  rotationPrompt: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.9)",
-    zIndex: 9999,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    color: tokens.colorNeutralForeground1,
-    textAlign: "center",
-    padding: tokens.spacingHorizontalXL,
-    /* Safe area insets for rotation prompt */
-    paddingTop: `max(${tokens.spacingHorizontalXL}, env(safe-area-inset-top))`,
-    paddingBottom: `max(${tokens.spacingHorizontalXL}, env(safe-area-inset-bottom))`,
-    paddingLeft: `max(${tokens.spacingHorizontalXL}, env(safe-area-inset-left))`,
-    paddingRight: `max(${tokens.spacingHorizontalXL}, env(safe-area-inset-right))`,
-  },
-  phoneIcon: {
-    fontSize: "80px",
-    marginBottom: tokens.spacingVerticalXL,
-    animationName: {
-      "0%": { transform: "rotate(0deg)" },
-      "25%": { transform: "rotate(-15deg)" },
-      "75%": { transform: "rotate(15deg)" },
-      "100%": { transform: "rotate(90deg)" },
-    },
-    animationDuration: "2s",
-    animationIterationCount: "infinite",
-    animationTimingFunction: "ease-in-out",
-  },
-  rotationText: {
-    fontSize: tokens.fontSizeBase500,
-    fontWeight: tokens.fontWeightSemibold,
-    marginBottom: tokens.spacingVerticalM,
-  },
-  rotationSubtext: {
-    fontSize: tokens.fontSizeBase300,
-    opacity: 0.8,
-  },
-  rotationPromptContent: {
-    position: "relative",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dismissButton: {
-    position: "absolute",
-    top: "-20px",
-    right: "-20px",
-    color: tokens.colorNeutralForeground1,
-  },
-  navigationContainer: {
-    marginBottom: tokens.spacingVerticalXL,
-    // Custom tab colors
-    "& [role='tablist']": {
-      "& [role='tab']": {
-        color: "#a60000",
-        "& svg": {
-          color: "#a60000",
-        },
-      },
-      "& [role='tab'][aria-selected='true']": {
-        color: "#a60000",
-        borderBottomColor: "#a60000",
-        "& svg": {
-          color: "#a60000",
-        },
-      },
-      "& [role='tab']:hover": {
-        color: "#a60000",
-        "& svg": {
-          color: "#a60000",
-        },
-      },
-      "& [role='tab']:focus": {
-        color: "#a60000",
-        "& svg": {
-          color: "#a60000",
-        },
-      },
-    },
-    // Mobile-specific styling for vertical tabs
-    "@media (max-width: 768px)": {
-      "& [role='tablist']": {
-        flexDirection: "column",
-        alignItems: "stretch",
-        gap: tokens.spacingVerticalXS,
-      },
-      "& [role='tab']": {
-        justifyContent: "flex-start",
-        width: "100%",
-        textAlign: "left",
-        padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalL}`,
-      },
-    },
-  },
-  tabContent: {
-    marginTop: tokens.spacingVerticalL,
-    touchAction: "auto", // Allow default touch behavior for child elements
-  },
-  pullToRefresh: {
-    position: "fixed",
-    top: `max(${tokens.spacingVerticalM}, env(safe-area-inset-top))`,
-    left: "50%",
-    zIndex: 1001,
-    display: "flex",
-    alignItems: "center",
-    gap: tokens.spacingHorizontalS,
-    backgroundColor: "rgba(166, 0, 0, 0.9)",
-    color: "white",
-    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
-    borderRadius: tokens.borderRadiusLarge,
-    transition: "all 0.3s ease",
-    opacity: 0,
-    transform: "translateX(-50%) translateY(-100%)",
-    "&.visible": {
-      opacity: 1,
-      transform: "translateX(-50%) translateY(0)",
-    },
-    "&.pulling": {
-      backgroundColor: "rgba(166, 0, 0, 0.7)",
-    },
-  },
-});
+import "./App.css";
+import { useStatisticsTab, useOverviewTab, useStandingsTab } from "./hooks";
+import { setupOpenOnlineWindowGlobal } from "./utils/htmlUtils";
 
 function FluentApp() {
-  const styles = useStyles();
+  // Custom hooks for tab functionality
+  const {
+    isExtractingTable,
+    tableResult,
+    statisticsCategory,
+    setStatisticsCategory,
+    leagueId,
+    setLeagueId,
+    extractTableContent,
+  } = useStatisticsTab();
+
+  const {
+    isExtractingOverview,
+    overviewResult,
+    overviewLeagueId,
+    setOverviewLeagueId,
+    extractTeamOverview,
+  } = useOverviewTab();
+
+  const {
+    isExtractingStandings,
+    standingsResult,
+    standingsLeagueId,
+    setStandingsLeagueId,
+    extractStandings,
+  } = useStandingsTab();
 
   // Orientation detection states
   const [isPortraitMobile, setIsPortraitMobile] = useState(false);
@@ -371,27 +75,6 @@ function FluentApp() {
   const [pullDistance, setPullDistance] = useState(0);
   const [startY, setStartY] = useState(0);
   const [isPulling, setIsPulling] = useState(false);
-
-  // Table extraction states
-  const [statisticsCategory, setStatisticsCategory] =
-    useState("ScoringLeaders");
-  const [leagueId, setLeagueId] = useState("18757");
-  const [tableResult, setTableResult] = useState<TableExtractionResult | null>(
-    null
-  );
-  const [isExtractingTable, setIsExtractingTable] = useState(false);
-
-  // Team overview extraction states
-  const [overviewLeagueId, setOverviewLeagueId] = useState("19041");
-  const [overviewResult, setOverviewResult] =
-    useState<TeamOverviewResult | null>(null);
-  const [isExtractingOverview, setIsExtractingOverview] = useState(false);
-
-  // Standings extraction states
-  const [standingsLeagueId, setStandingsLeagueId] = useState("19041");
-  const [standingsResult, setStandingsResult] =
-    useState<TeamOverviewResult | null>(null);
-  const [isExtractingStandings, setIsExtractingStandings] = useState(false);
 
   // League options
   const leagueOptions = [
@@ -518,140 +201,12 @@ function FluentApp() {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      setTableResult(null);
-      setOverviewResult(null);
+      // Clear all results and reload the page
       window.location.reload();
     } catch (error) {
       console.error("Refresh failed:", error);
     } finally {
       setIsRefreshing(false);
-    }
-  };
-
-  /**
-   * Converts JavaScript openonlinewindow links to proper HTTPS URLs
-   *
-   * Handles various formats:
-   * - href="javascript:openonlinewindow('/Game/Events/1017728','')"
-   * - Multi-line formats with whitespace
-   * - onclick handlers
-   *
-   * @param html - The HTML string containing JavaScript links
-   * @returns The HTML string with converted HTTPS links
-   *
-   * @example
-   * const html = '<a href="javascript:openonlinewindow(\'/Game/Events/1017728\',\'\')">Game</a>';
-   * const converted = convertOpenOnlineWindowLinks(html);
-   * // Result: '<a href="https://stats.swehockey.se/Game/Events/1017728" target="_blank" rel="noopener noreferrer">Game</a>'
-   */
-  const convertOpenOnlineWindowLinks = (html: string): string => {
-    let convertedHtml = html;
-
-    // Handle multi-line format with whitespace and line breaks:
-    // href="
-    //   javascript:openonlinewindow('/Game/Events/1017728','')
-    // "
-    convertedHtml = convertedHtml.replace(
-      /href="\s*javascript:openonlinewindow\('([^']+)',\s*'[^']*'\)\s*"/gis,
-      'href="https://stats.swehockey.se$1" target="_blank" rel="noopener noreferrer"'
-    );
-
-    // Handle format without quotes in the second parameter
-    convertedHtml = convertedHtml.replace(
-      /href="\s*javascript:openonlinewindow\(([^,)]+),\s*[^)]*\)\s*"/gis,
-      (_, path) => {
-        // Remove any quotes from the path
-        const cleanPath = path.replace(/['"]/g, "");
-        return `href="https://stats.swehockey.se${cleanPath}" target="_blank" rel="noopener noreferrer"`;
-      }
-    );
-
-    // Fallback: Handle single parameter format if any exist
-    convertedHtml = convertedHtml.replace(
-      /href="\s*javascript:openonlinewindow\('([^']+)'\)\s*"/gis,
-      'href="https://stats.swehockey.se$1" target="_blank" rel="noopener noreferrer"'
-    );
-
-    // Additional fallback for any remaining onclick handlers
-    convertedHtml = convertedHtml.replace(
-      /onclick="\s*openonlinewindow\('([^']+)',\s*'[^']*'\)\s*"/gis,
-      "onclick=\"window.open('https://stats.swehockey.se$1', '_blank', 'noopener,noreferrer')\""
-    );
-
-    // Handle any remaining openonlinewindow function calls (not in attributes)
-    convertedHtml = convertedHtml.replace(
-      /openonlinewindow\('([^']+)',\s*'[^']*'\)/gis,
-      "window.open('https://stats.swehockey.se$1', '_blank', 'noopener,noreferrer')"
-    );
-
-    // Handle single parameter openonlinewindow calls
-    convertedHtml = convertedHtml.replace(
-      /openonlinewindow\('([^']+)'\)/gis,
-      "window.open('https://stats.swehockey.se$1', '_blank', 'noopener,noreferrer')"
-    );
-
-    return convertedHtml;
-  };
-
-  // Function to add d-none class to specific columns for mobile hiding
-  const addMobileHidingClasses = (html: string): string => {
-    // Keywords that indicate columns to hide on mobile devices
-    const hideKeywords = ["åskådare", "spectators", "publik", "arena", "venue"];
-
-    try {
-      // Create a temporary DOM element to parse the HTML
-      const tempDiv = document.createElement("div");
-      tempDiv.innerHTML = html;
-
-      // Find all tables
-      const tables = tempDiv.querySelectorAll("table");
-
-      tables.forEach((table) => {
-        const headerRow = table.querySelector("tr");
-        if (!headerRow) return;
-
-        const headers = headerRow.querySelectorAll("th, td");
-        const columnsToHide: number[] = [];
-
-        // Identify columns to hide based on header text
-        headers.forEach((header, index) => {
-          const headerText = header.textContent?.toLowerCase().trim() || "";
-          const shouldHide = hideKeywords.some(
-            (keyword) => headerText === keyword || headerText.includes(keyword)
-          );
-
-          if (shouldHide) {
-            columnsToHide.push(index);
-            console.log(
-              `Marking column ${index} for mobile hiding: "${header.textContent}"`
-            );
-          }
-        });
-
-        // Safety check: only hide if we're hiding 2 or fewer columns
-        if (columnsToHide.length > 2) {
-          console.warn(
-            `Too many columns would be hidden (${columnsToHide.length}), skipping mobile optimization for this table`
-          );
-          return;
-        }
-
-        // Add d-none class to identified columns
-        const allRows = table.querySelectorAll("tr");
-        allRows.forEach((row) => {
-          const cells = row.querySelectorAll("th, td");
-          columnsToHide.forEach((columnIndex) => {
-            if (cells[columnIndex]) {
-              cells[columnIndex].classList.add("d-none");
-            }
-          });
-        });
-      });
-
-      return tempDiv.innerHTML;
-    } catch (error) {
-      console.warn("Error adding mobile hiding classes:", error);
-      return html; // Return original HTML if processing fails
     }
   };
 
@@ -674,306 +229,29 @@ function FluentApp() {
     };
   }, []);
 
-  const extractTableContent = async () => {
-    if (isExtractingTable) return;
-    setIsExtractingTable(true);
-    setTableResult(null);
-    setOverviewResult(null);
-
-    const tableUrl = `https://stats.swehockey.se/Players/Statistics/${statisticsCategory}/${leagueId}`;
-
-    try {
-      const response = await fetch(tableUrl);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch page: ${response.status}`);
-      }
-
-      const html = await response.text();
-      let tableHtml = "";
-
-      const tableMatch1 = html.match(
-        /<table[^>]*class[^>]*=["'][^"']*tblContent[^"']*["'][^>]*>[\s\S]*?<\/table>/i
-      );
-
-      if (tableMatch1) {
-        tableHtml = tableMatch1[0];
-      } else {
-        const tableMatch2 = html.match(
-          /<table[^>]*class=['"]tblContent['"][^>]*>[\s\S]*?<\/table>/i
-        );
-
-        if (tableMatch2) {
-          tableHtml = tableMatch2[0];
-        } else {
-          const allTableMatches = html.match(/<table[\s\S]*?<\/table>/gi);
-          if (allTableMatches) {
-            const tblContentTable = allTableMatches.find(
-              (table) =>
-                table.includes("tblContent") ||
-                table.includes('class="tblContent"')
-            );
-            if (tblContentTable) {
-              tableHtml = tblContentTable;
-            }
-          }
-        }
-      }
-
-      if (tableHtml) {
-        tableHtml = tableHtml.trim();
-        const rowCount = (tableHtml.match(/<tr[\s\S]*?<\/tr>/gi) || []).length;
-        const cellCount = (tableHtml.match(/<td[\s\S]*?<\/td>/gi) || []).length;
-
-        setTableResult({
-          url: tableUrl,
-          tableHtml: tableHtml,
-          success: true,
-          debugInfo: `Table extracted successfully: ${rowCount} rows, ${cellCount} cells`,
-        });
-      } else {
-        const allTables = html.match(/<table[\s\S]*?<\/table>/gi);
-        const tableInfo = allTables
-          ? `Found ${allTables.length} table(s) on the page, but none with class 'tblContent'`
-          : "No tables found on the page";
-
-        setTableResult({
-          url: tableUrl,
-          tableHtml: "",
-          success: false,
-          error: `No table with class 'tblContent' found. ${tableInfo}`,
-        });
-      }
-    } catch (error) {
-      setTableResult({
-        url: tableUrl,
-        tableHtml: "",
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-
-    setIsExtractingTable(false);
-  };
-
-  const extractTeamOverview = async () => {
-    if (isExtractingOverview) return;
-    setIsExtractingOverview(true);
-    setOverviewResult(null);
-    setTableResult(null);
-
-    const overviewUrl = `https://stats.swehockey.se/ScheduleAndResults/Schedule/${overviewLeagueId}`;
-
-    try {
-      const response = await fetch(overviewUrl);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch overview page: ${response.status}`);
-      }
-
-      const html = await response.text();
-      let overviewHtml = "";
-
-      const tsmStartMatch = html.match(
-        /<div[^>]*class[^>]*=["'][^"']*TSMstats[^"']*container-fluid[^"']*["'][^>]*>/i
-      );
-
-      if (tsmStartMatch) {
-        const startIndex = html.indexOf(tsmStartMatch[0]);
-        let divCount = 1;
-        let endIndex = startIndex + tsmStartMatch[0].length;
-
-        while (endIndex < html.length && divCount > 0) {
-          const nextDiv = html.indexOf("<div", endIndex);
-          const nextCloseDiv = html.indexOf("</div>", endIndex);
-
-          if (nextCloseDiv === -1) break;
-
-          if (nextDiv !== -1 && nextDiv < nextCloseDiv) {
-            divCount++;
-            endIndex = nextDiv + 4;
-          } else {
-            divCount--;
-            endIndex = nextCloseDiv + 6;
-          }
-        }
-
-        if (divCount === 0) {
-          overviewHtml = html.substring(startIndex, endIndex);
-        }
-      }
-
-      if (overviewHtml) {
-        overviewHtml = overviewHtml.trim();
-
-        // Convert JavaScript openonlinewindow links to proper HTTPS URLs
-        overviewHtml = convertOpenOnlineWindowLinks(overviewHtml);
-
-        // Add d-none class to specific columns for mobile hiding
-        overviewHtml = addMobileHidingClasses(overviewHtml);
-
-        const divCount = (overviewHtml.match(/<div[^>]*>/gi) || []).length;
-        const tableCount = (overviewHtml.match(/<table[^>]*>/gi) || []).length;
-        const textLength = overviewHtml.replace(/<[^>]*>/g, "").trim().length;
-
-        setOverviewResult({
-          url: overviewUrl,
-          overviewHtml: overviewHtml,
-          success: true,
-          debugInfo: `Overview extracted: ${textLength} chars, ${divCount} divs, ${tableCount} tables`,
-        });
-      } else {
-        const hasTSMstats = html.includes("TSMstats");
-        const hasContainerFluid = html.includes("container-fluid");
-
-        setOverviewResult({
-          url: overviewUrl,
-          overviewHtml: "",
-          success: false,
-          error: `No TSMstats container found. TSMstats present: ${hasTSMstats}, container-fluid present: ${hasContainerFluid}`,
-        });
-      }
-    } catch (error) {
-      setOverviewResult({
-        url: overviewUrl,
-        overviewHtml: "",
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-
-    setIsExtractingOverview(false);
-  };
-
-  const extractStandings = async () => {
-    if (isExtractingStandings) return;
-    setIsExtractingStandings(true);
-    setStandingsResult(null);
-    setTableResult(null);
-    setOverviewResult(null);
-
-    const standingsUrl = `https://stats.swehockey.se/ScheduleAndResults/Standings/${standingsLeagueId}`;
-
-    try {
-      const response = await fetch(standingsUrl);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch standings page: ${response.status}`);
-      }
-
-      const html = await response.text();
-      let standingsHtml = "";
-
-      // Find the TSMstats container-fluid div
-      const tsmStartMatch = html.match(
-        /<div[^>]*class[^>]*=["'][^"']*TSMstats[^"']*container-fluid[^"']*["'][^>]*>/i
-      );
-
-      if (tsmStartMatch) {
-        const startIndex = html.indexOf(tsmStartMatch[0]);
-        let divCount = 1;
-        let endIndex = startIndex + tsmStartMatch[0].length;
-
-        while (endIndex < html.length && divCount > 0) {
-          const nextDiv = html.indexOf("<div", endIndex);
-          const nextCloseDiv = html.indexOf("</div>", endIndex);
-
-          if (nextCloseDiv === -1) break;
-
-          if (nextDiv !== -1 && nextDiv < nextCloseDiv) {
-            divCount++;
-            endIndex = nextDiv + 4;
-          } else {
-            divCount--;
-            endIndex = nextCloseDiv + 6;
-          }
-        }
-
-        if (divCount === 0) {
-          const containerHtml = html.substring(startIndex, endIndex);
-
-          // Special handling for league ID 18986 - extract first 2 tables
-          if (standingsLeagueId === "18986") {
-            const allTableMatches = containerHtml.match(
-              /<table[^>]*class[^>]*=["'][^"']*tblBorderNoPad[^"']*["'][^>]*>[\s\S]*?<\/table>/gi
-            );
-
-            if (allTableMatches && allTableMatches.length >= 2) {
-              standingsHtml = allTableMatches[0] + allTableMatches[1];
-            } else if (allTableMatches && allTableMatches.length === 1) {
-              standingsHtml = allTableMatches[0];
-            }
-          } else {
-            // Default behavior - find the first table with class "tblBorderNoPad"
-            const tableMatch = containerHtml.match(
-              /<table[^>]*class[^>]*=["'][^"']*tblBorderNoPad[^"']*["'][^>]*>[\s\S]*?<\/table>/i
-            );
-
-            if (tableMatch) {
-              standingsHtml = tableMatch[0];
-            }
-          }
-        }
-      }
-
-      if (standingsHtml) {
-        standingsHtml = standingsHtml.trim();
-
-        // Convert JavaScript openonlinewindow links to proper HTTPS URLs
-        standingsHtml = convertOpenOnlineWindowLinks(standingsHtml);
-
-        // Add d-none class to specific columns for mobile hiding
-        standingsHtml = addMobileHidingClasses(standingsHtml);
-
-        const rowCount = (standingsHtml.match(/<tr[\s\S]*?<\/tr>/gi) || [])
-          .length;
-        const cellCount = (standingsHtml.match(/<td[\s\S]*?<\/td>/gi) || [])
-          .length;
-        const tableCount = (standingsHtml.match(/<table[^>]*>/gi) || []).length;
-
-        setStandingsResult({
-          url: standingsUrl,
-          overviewHtml: standingsHtml,
-          success: true,
-          debugInfo: `Standings extracted: ${tableCount} table(s), ${rowCount} rows, ${cellCount} cells`,
-        });
-      } else {
-        const hasTSMstats = html.includes("TSMstats");
-        const hasContainerFluid = html.includes("container-fluid");
-        const hasTblBorderNoPad = html.includes("tblBorderNoPad");
-
-        setStandingsResult({
-          url: standingsUrl,
-          overviewHtml: "",
-          success: false,
-          error: `No standings table found. TSMstats: ${hasTSMstats}, container-fluid: ${hasContainerFluid}, tblBorderNoPad: ${hasTblBorderNoPad}`,
-        });
-      }
-    } catch (error) {
-      setStandingsResult({
-        url: standingsUrl,
-        overviewHtml: "",
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-
-    setIsExtractingStandings(false);
-  };
+  // Set up the global openonlinewindow function
+  useEffect(() => {
+    setupOpenOnlineWindowGlobal();
+  }, []);
 
   return (
     <FluentProvider theme={webDarkTheme}>
       {/* Rotation Prompt Overlay */}
       {isPortraitMobile && showRotationPrompt && (
-        <div className={styles.rotationPrompt}>
-          <div className={styles.rotationPromptContent}>
+        <div className="fluent-rotation-prompt">
+          <div className="fluent-rotation-prompt-content">
             <Button
               appearance="subtle"
               icon={<DismissRegular />}
               onClick={() => setShowRotationPrompt(false)}
-              className={styles.dismissButton}
+              className="fluent-dismiss-button"
               title="Continue in portrait mode"
             />
-            <PhoneScreenTimeRegular className={styles.phoneIcon} />
-            <div className={styles.rotationText}>Please rotate your device</div>
-            <div className={styles.rotationSubtext}>
+            <PhoneScreenTimeRegular className="fluent-phone-icon" />
+            <div className="fluent-rotation-text">
+              Please rotate your device
+            </div>
+            <div className="fluent-rotation-subtext">
               This app works best in landscape mode
             </div>
             <Button
@@ -987,11 +265,11 @@ function FluentApp() {
         </div>
       )}
 
-      <div className={styles.app}>
+      <div className="fluent-app">
         {/* Pull to Refresh Indicator */}
         {(pullDistance > 0 || isRefreshing) && (
           <div
-            className={`${styles.pullToRefresh} ${
+            className={`fluent-pull-to-refresh ${
               pullDistance > 50 || isRefreshing ? "visible" : ""
             } ${isPulling ? "pulling" : ""}`}
             style={{
@@ -1036,7 +314,7 @@ function FluentApp() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className={styles.navigationContainer}>
+        <div className="fluent-navigation-container">
           <TabList
             selectedValue={activeTab}
             onTabSelect={handleTabSelect}
@@ -1055,19 +333,19 @@ function FluentApp() {
         </div>
 
         {/* Tab Content */}
-        <div className={styles.tabContent}>
+        <div className="fluent-tab-content">
           {/* Player Statistics Section */}
           {activeTab === "statistics" && (
-            <Card className={styles.section}>
+            <Card className="fluent-section">
               <CardHeader
                 header={<Title3>Player Statistics</Title3>}
                 description={"Extract player statistics from league pages"}
               />
-              <div className={styles.controls}>
-                <div className={styles.formRow}>
+              <div className="fluent-controls">
+                <div className="fluent-form-row">
                   <Field label="Category">
                     <Dropdown
-                      className={styles.dropdown}
+                      className="fluent-dropdown"
                       value={
                         statisticsOptions.find(
                           (opt) => opt.value === statisticsCategory
@@ -1088,7 +366,7 @@ function FluentApp() {
 
                   <Field label="League">
                     <Dropdown
-                      className={styles.dropdown}
+                      className="fluent-dropdown"
                       value={
                         leagueOptions.find((opt) => opt.value === leagueId)
                           ?.text
@@ -1108,7 +386,7 @@ function FluentApp() {
                   </Field>
                 </div>
 
-                <div className={styles.buttonGroup}>
+                <div className="fluent-button-group">
                   <Button
                     appearance="primary"
                     icon={
@@ -1129,7 +407,7 @@ function FluentApp() {
               </div>
 
               {tableResult && (
-                <Card className={styles.resultCard}>
+                <Card className="fluent-result-card">
                   <CardHeader
                     header={
                       <div
@@ -1164,7 +442,7 @@ function FluentApp() {
                   {tableResult.success && tableResult.tableHtml && (
                     <CardPreview>
                       <div
-                        className={styles.extractedTable}
+                        className="fluent-extracted-table"
                         dangerouslySetInnerHTML={{
                           __html: tableResult.tableHtml,
                         }}
@@ -1183,18 +461,18 @@ function FluentApp() {
 
           {/* Team Overview Section */}
           {activeTab === "overview" && (
-            <Card className={styles.section}>
+            <Card className="fluent-section">
               <CardHeader
                 header={<Title3>Schedule & Results</Title3>}
                 description={
                   "Extract team overview and statistics from league overview pages"
                 }
               />
-              <div className={styles.controls}>
-                <div className={styles.formRow}>
+              <div className="fluent-controls">
+                <div className="fluent-form-row">
                   <Field label="League">
                     <Dropdown
-                      className={styles.dropdown}
+                      className="fluent-dropdown"
                       value={
                         leagueOptions.find(
                           (opt) => opt.value === overviewLeagueId
@@ -1214,7 +492,7 @@ function FluentApp() {
                   </Field>
                 </div>
 
-                <div className={styles.buttonGroup}>
+                <div className="fluent-button-group">
                   <Button
                     appearance="primary"
                     icon={
@@ -1235,7 +513,7 @@ function FluentApp() {
               </div>
 
               {overviewResult && (
-                <Card className={styles.resultCard}>
+                <Card className="fluent-result-card">
                   <CardHeader
                     header={
                       <div
@@ -1270,7 +548,7 @@ function FluentApp() {
                   {overviewResult.success && overviewResult.overviewHtml && (
                     <CardPreview>
                       <div
-                        className={styles.extractedTable}
+                        className="fluent-extracted-table"
                         dangerouslySetInnerHTML={{
                           __html: overviewResult.overviewHtml,
                         }}
@@ -1289,16 +567,16 @@ function FluentApp() {
 
           {/* Standings Section */}
           {activeTab === "standings" && (
-            <Card className={styles.section}>
+            <Card className="fluent-section">
               <CardHeader
                 header={<Title3>Standings</Title3>}
                 description={"Extract league standings from standings pages"}
               />
-              <div className={styles.controls}>
-                <div className={styles.formRow}>
+              <div className="fluent-controls">
+                <div className="fluent-form-row">
                   <Field label="League">
                     <Dropdown
-                      className={styles.dropdown}
+                      className="fluent-dropdown"
                       value={
                         leagueOptions.find(
                           (opt) => opt.value === standingsLeagueId
@@ -1318,7 +596,7 @@ function FluentApp() {
                   </Field>
                 </div>
 
-                <div className={styles.buttonGroup}>
+                <div className="fluent-button-group">
                   <Button
                     appearance="primary"
                     icon={
@@ -1339,7 +617,7 @@ function FluentApp() {
               </div>
 
               {standingsResult && (
-                <Card className={styles.resultCard}>
+                <Card className="fluent-result-card">
                   <CardHeader
                     header={
                       <div
@@ -1374,7 +652,7 @@ function FluentApp() {
                   {standingsResult.success && standingsResult.overviewHtml && (
                     <CardPreview>
                       <div
-                        className={styles.extractedTable}
+                        className="fluent-extracted-table"
                         dangerouslySetInnerHTML={{
                           __html: standingsResult.overviewHtml,
                         }}
